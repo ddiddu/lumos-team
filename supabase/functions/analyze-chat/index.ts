@@ -91,7 +91,7 @@ This applies to ALL fields: overview, left_off, weekly_summary, next_up, interac
 
     let canonicalProjectInfo = "";
     if (canonicalProjects && Array.isArray(canonicalProjects) && canonicalProjects.length > 0) {
-      canonicalProjectInfo = `\n\nIMPORTANT: Use ONLY these canonical project names (do NOT invent new names):\n${canonicalProjects.map((p: any) => `- "${p.canonical_name}" (also known as: ${p.aliases?.join(", ") || "no aliases"})`).join("\n")}\nOnly include projects that "${userName}" is actually involved in based on the chat data.`;
+      canonicalProjectInfo = `\n\nIMPORTANT: Use ONLY these canonical project names (do NOT invent new names):\n${canonicalProjects.map((p: any) => `- "${p.canonical_name}" (also known as: ${p.aliases?.join(", ") || "no aliases"}) — Members: ${p.members?.join(", ") || "unknown"}`).join("\n")}\nOnly include projects that "${userName}" is actually involved in based on the chat data.\nFor the "members" array of each project, use the members listed above for that project (excluding "${userName}" themselves). These are the people who sent messages about that project.`;
     }
 
     let countsInfo = "";
