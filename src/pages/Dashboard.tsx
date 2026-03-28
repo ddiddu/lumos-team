@@ -73,7 +73,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
-            <ManagerDashboard result={result} userName={userName} weekLabels={result.weekLabels} chatData={chatData} />
+            <ManagerDashboard result={result} userName={userName} weekLabels={result.weekLabels} chatData={chatData} managerResults={managerResults} />
           </div>
         </main>
       )}
