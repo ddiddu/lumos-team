@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -161,7 +161,7 @@ const DataInput = () => {
   const [funFactIndex, setFunFactIndex] = useState(0);
   const [funFactVisible, setFunFactVisible] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (phase !== "loading") return;
     const interval = setInterval(() => {
       setFunFactVisible(false);
