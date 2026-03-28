@@ -26,13 +26,16 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
         "W3": "one line summary of week 3 activity",
         "W4": "one line summary of week 4 activity"
       },
-      "message_counts": <WILL BE PROVIDED - USE EXACTLY AS GIVEN>,
+      "message_counts": {
+        "W1": 0, "W2": 0, "W3": 0, "W4": 0,
+        "W4_daily": {"Mon": 0, "Tue": 0, "Wed": 0, "Thu": 0, "Fri": 0}
+      },
       "next_up": ["task 1", "task 2", "task 3"]
     }
   ]
 }
 
-IMPORTANT: The "message_counts" field will be provided to you as pre-calculated data from real timestamp parsing. You MUST use the provided message counts exactly as given for each project. Distribute the total counts across projects proportionally based on how many messages relate to each project.
+IMPORTANT: The "message_counts" field will be provided to you as pre-calculated data from real timestamp parsing. You MUST use the provided message counts exactly as given for each project. Include the W4_daily breakdown in each project. Distribute the total counts across projects proportionally based on how many messages relate to each project.
 
 Focus your analysis on:
 1. Identifying the user's work style from their messages (the user whose name is provided)
