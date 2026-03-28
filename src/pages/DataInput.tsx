@@ -352,6 +352,11 @@ const DataInput = () => {
                 <span className={`font-medium transition-all duration-300 ${expanded ? "text-xs" : "text-sm"}`}>
                   {s.label}
                 </span>
+                {s.price && (
+                  <span className={`text-muted-foreground transition-all duration-300 ${expanded ? "text-[9px]" : "text-[11px]"}`}>
+                    {s.price}
+                  </span>
+                )}
               </button>
             );
           })}
