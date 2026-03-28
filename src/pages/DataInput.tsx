@@ -365,7 +365,8 @@ const DataInput = () => {
           }`}
         >
           <div className="space-y-4 pt-2">
-            <button
+            <Button
+              variant="outline"
               type="button"
               onClick={async () => {
                 try {
