@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { parseTeamsChat, countMessages } from "@/lib/chatParser";
 import type { AnalysisResult } from "@/types/analysis";
 
 const DataInput = () => {
+  const [userName, setUserName] = useState("");
   const [chatData, setChatData] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
@@ -19,6 +22,10 @@ const DataInput = () => {
   ];
 
   const analyze = async () => {
+    if (!userName.trim()) {
+      toast.error("Please enter your name first.");
+      return;
+    }
     if (!chatData.trim()) {
       toast.error("Please paste some chat data first.");
       return;
@@ -34,8 +41,12 @@ const DataInput = () => {
     }, 2000);
 
     try {
+      // Parse chat and count messages
+      const parsed = parseTeamsChat(chatData);
+      const counts = countMessages(parsed, userName);
+
       const { data, error } = await supabase.functions.invoke("analyze-chat", {
-        body: { chatData },
+        body: { chatData, userName, messageCounts: counts },
       });
 
       clearInterval(interval);
@@ -71,6 +82,12 @@ const DataInput = () => {
           </p>
         </div>
 
+        <Input
+          placeholder="Your name (e.g. Jisu Kim)"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+        />
+
         <Textarea
           placeholder="Paste your Teams or Slack chat here..."
           className="min-h-[300px] resize-none font-mono text-sm"
@@ -93,7 +110,7 @@ const DataInput = () => {
           >
             Connect Slack
           </Button>
-          <Button onClick={analyze} disabled={!chatData.trim()}>
+          <Button onClick={analyze} disabled={!chatData.trim() || !userName.trim()}>
             Analyze
           </Button>
         </div>

@@ -26,16 +26,21 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
         "W3": "one line summary of week 3 activity",
         "W4": "one line summary of week 4 activity"
       },
-      "message_counts": {
-        "W1": 12, "W2": 8, "W3": 15, "W4": 20,
-        "W4_daily": {"Mon": 5, "Tue": 3, "Wed": 4, "Thu": 5, "Fri": 3}
-      },
+      "message_counts": <WILL BE PROVIDED - USE EXACTLY AS GIVEN>,
       "next_up": ["task 1", "task 2", "task 3"]
     }
   ]
 }
 
-Extract at least 2 projects if possible. Make reasonable estimates for message counts based on the chat volume. If the chat doesn't span 4 weeks, extrapolate reasonably. Return ONLY valid JSON, no markdown fences.`;
+IMPORTANT: The "message_counts" field will be provided to you as pre-calculated data from real timestamp parsing. You MUST use the provided message counts exactly as given for each project. Distribute the total counts across projects proportionally based on how many messages relate to each project.
+
+Focus your analysis on:
+1. Identifying the user's work style from their messages (the user whose name is provided)
+2. Extracting distinct projects being discussed
+3. Writing accurate weekly summaries
+4. Suggesting actionable next steps
+
+Extract at least 2 projects if possible. Return ONLY valid JSON, no markdown fences.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -43,7 +48,7 @@ serve(async (req) => {
   }
 
   try {
-    const { chatData } = await req.json();
+    const { chatData, userName, messageCounts } = await req.json();
     if (!chatData || typeof chatData !== "string" || chatData.trim().length === 0) {
       return new Response(JSON.stringify({ error: "chatData is required" }), {
         status: 400,
@@ -56,6 +61,10 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    const countsInfo = messageCounts
+      ? `\n\nPre-calculated message counts for user "${userName}":\nWeekly: W1=${messageCounts.weekly?.W1 || 0}, W2=${messageCounts.weekly?.W2 || 0}, W3=${messageCounts.weekly?.W3 || 0}, W4=${messageCounts.weekly?.W4 || 0}\nW4 daily: Mon=${messageCounts.daily?.Mon || 0}, Tue=${messageCounts.daily?.Tue || 0}, Wed=${messageCounts.daily?.Wed || 0}, Thu=${messageCounts.daily?.Thu || 0}, Fri=${messageCounts.daily?.Fri || 0}\n\nDistribute these counts proportionally across the projects you identify.`
+      : "";
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -66,7 +75,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: `Analyze this chat log:\n\n${chatData}` },
+          { role: "user", content: `User name: ${userName || "Unknown"}\n\nAnalyze this chat log:\n\n${chatData}${countsInfo}` },
         ],
       }),
     });
@@ -94,7 +103,6 @@ serve(async (req) => {
 
     if (!content) throw new Error("No content in AI response");
 
-    // Parse the JSON from the response (strip markdown fences if present)
     const jsonStr = content.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
     const result = JSON.parse(jsonStr);
 
