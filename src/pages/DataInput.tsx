@@ -311,9 +311,9 @@ const DataInput = () => {
   }
 
   const sources = [
-    { id: "teams" as const, label: "Teams", icon: MessageSquare, disabled: true },
-    { id: "slack" as const, label: "Slack", icon: Hash, disabled: true },
-    { id: "txt" as const, label: "Paste Text", icon: FileText, disabled: false },
+    { id: "teams" as const, label: "Teams", icon: MessageSquare, disabled: true, price: "$199 / team" },
+    { id: "slack" as const, label: "Slack", icon: Hash, disabled: true, price: "$199 / team" },
+    { id: "txt" as const, label: "Paste Text", icon: FileText, disabled: false, price: null },
   ];
 
   const expanded = source === "txt";
@@ -352,6 +352,11 @@ const DataInput = () => {
                 <span className={`font-medium transition-all duration-300 ${expanded ? "text-xs" : "text-sm"}`}>
                   {s.label}
                 </span>
+                {s.price && (
+                  <span className={`text-muted-foreground transition-all duration-300 ${expanded ? "text-[9px]" : "text-[11px]"}`}>
+                    {s.price}
+                  </span>
+                )}
               </button>
             );
           })}
