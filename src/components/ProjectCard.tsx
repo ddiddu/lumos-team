@@ -89,7 +89,7 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, width: 80 }} tickLine={false} axisLine={false} interval={0} />
                 <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={30} />
                 <Tooltip contentStyle={{ border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px", background: "hsl(var(--card))" }} />
                 <Bar dataKey="count" radius={[4, 4, 0, 0]} cursor={!drillDown ? "pointer" : "default"} onClick={(_, index) => handleBarClick(chartData[index])}>
@@ -107,13 +107,13 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
               <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Collaborators</p>
               <div className="flex flex-wrap gap-2">
                 {project.members.map((member, i) => (
-                  <div key={i} className="flex items-center gap-2 rounded-full border border-border bg-muted/50 px-3 py-1.5">
-                    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0">
+                  <div key={i} className="flex items-start gap-2 rounded-xl border border-border bg-muted/50 px-3 py-2 max-w-full">
+                    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0 mt-0.5">
                       {member.name.split(/[\s.]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("")}
                     </div>
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-xs font-medium whitespace-nowrap text-foreground">{member.name}</span>
-                      <span className="text-[11px] text-muted-foreground truncate">{member.interaction}</span>
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <span className="text-xs font-medium text-foreground">{member.name}</span>
+                      <span className="text-[11px] text-muted-foreground break-words">{member.interaction}</span>
                     </div>
                   </div>
                 ))}
