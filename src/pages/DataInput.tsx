@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -150,7 +150,31 @@ const DataInput = () => {
   };
 
   // ── Loading Phase ──
+  const DID_YOU_KNOW = [
+    { emoji: "💡", title: "Did you know?", body: "60% of work time goes to 'work about work' — chasing status, coordinating, and figuring out what everyone's doing.", source: "Asana, 10,000 knowledge workers" },
+    { emoji: "💬", title: "From a real manager:", body: "A lot of my messages get lost in Teams. I never know if my team actually saw them.", source: "Audit Team Manager" },
+    { emoji: "🔍", title: "Did you know?", body: "The average employee receives 153 Teams messages per day.", source: "Microsoft WorkLab" },
+    { emoji: "⚡", title: "Did you know?", body: "Teams that reduce status chasing ship faster and burn out less.", source: undefined },
+    { emoji: "🥚", title: undefined, body: "This tool was made by Jisu Kim. Say hi if you see her. 👋", source: undefined },
+  ];
+
+  const [funFactIndex, setFunFactIndex] = useState(0);
+  const [funFactVisible, setFunFactVisible] = useState(true);
+
+  useEffect(() => {
+    if (phase !== "loading") return;
+    const interval = setInterval(() => {
+      setFunFactVisible(false);
+      setTimeout(() => {
+        setFunFactIndex((prev) => (prev + 1) % DID_YOU_KNOW.length);
+        setFunFactVisible(true);
+      }, 400);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [phase]);
+
   if (phase === "loading") {
+    const card = DID_YOU_KNOW[funFactIndex];
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-background px-6">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -169,6 +193,18 @@ const DataInput = () => {
               {step.label}
             </p>
           ))}
+        </div>
+
+        {/* Did you know card */}
+        <div
+          className={`mt-4 max-w-sm w-full rounded-xl border border-border bg-card p-5 text-center transition-all duration-400 ${
+            funFactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+          }`}
+        >
+          <p className="text-2xl mb-2">{card.emoji}</p>
+          {card.title && <p className="text-xs font-semibold text-foreground mb-2">{card.title}</p>}
+          <p className="text-sm text-muted-foreground leading-relaxed">{card.body}</p>
+          {card.source && <p className="text-[11px] text-muted-foreground/60 mt-2">— {card.source}</p>}
         </div>
       </div>
     );
