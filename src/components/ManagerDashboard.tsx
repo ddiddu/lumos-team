@@ -77,10 +77,8 @@ function computeStatusFromChat(
 
   const sorted = [...memberMsgs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   const lastMsg = sorted[0];
-  // No messages in last 4 weeks → quiet
-  const fourWeeksAgo = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000);
+  const fourWeeksAgo = new Date(latestTimestamp.getTime() - 28 * 24 * 60 * 60 * 1000);
   if (lastMsg.timestamp < fourWeeksAgo) return "quiet";
-  // No messages in last 3 days → quiet
   const threeDaysAgo = new Date(latestTimestamp.getTime() - 3 * 24 * 60 * 60 * 1000);
   if (lastMsg.timestamp < threeDaysAgo) return "quiet";
 
@@ -107,21 +105,20 @@ function computeStatusFromChat(
   return "active";
 }
 
-function getDateRangeLabel(): string {
-  const today = new Date();
-  const todayDay = today.getDay();
-  const mondayOffset = todayDay === 0 ? 6 : todayDay - 1;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - mondayOffset);
+function getDateRangeLabel(messages: ReturnType<typeof parseTeamsChat>): string {
+  if (messages.length === 0) return "This week";
+  const sorted = [...messages].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  const latest = sorted[sorted.length - 1].timestamp;
+  const latestDay = latest.getDay();
+  const mondayOffset = latestDay === 0 ? 6 : latestDay - 1;
+  const monday = new Date(latest);
+  monday.setDate(latest.getDate() - mondayOffset);
   const friday = new Date(monday);
   friday.setDate(monday.getDate() + 4);
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const mStart = months[monday.getMonth()];
   const mEnd = months[friday.getMonth()];
   const year = friday.getFullYear();
-  if (mStart === mEnd) {
-    return `${mStart} ${monday.getDate()} – ${friday.getDate()}, ${year}`;
-  }
   return `${mStart} ${monday.getDate()} – ${mEnd} ${friday.getDate()}, ${year}`;
 }
 
@@ -138,7 +135,7 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
   const [statusFilter, setStatusFilter] = useState<MemberStatus | null>(null);
 
   const allMessages = parseTeamsChat(chatData);
-  const dateRange = getDateRangeLabel();
+  const dateRange = getDateRangeLabel(allMessages);
 
   const latestTimestamp = allMessages.length > 0
     ? new Date(Math.max(...allMessages.map((m) => m.timestamp.getTime())))

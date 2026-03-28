@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { ChevronRight, ChevronUp } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import type { Project, WeekLabelInfo } from "@/types/analysis";
 
 const statusVariant = (status: Project["status"]) => {
@@ -113,19 +113,14 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
               Weekly breakdown
             </p>
             <div className="space-y-1.5">
-              {reversedWeeks.map((w) => {
-                const summary = project.weekly_summary[w];
-                return (
-                  <div key={w} className="flex gap-3 text-sm">
-                    <span className="font-medium text-muted-foreground w-28 shrink-0">
-                      {labelMap[w] || w}
-                    </span>
-                    <span className={!summary ? "text-muted-foreground italic" : ""}>
-                      {summary || "No activity"}
-                    </span>
-                  </div>
-                );
-              })}
+              {reversedWeeks.map((w) => (
+                <div key={w} className="flex gap-3 text-sm">
+                  <span className="font-medium text-muted-foreground w-16 shrink-0">
+                    {labelMap[w] || w}
+                  </span>
+                  <span>{project.weekly_summary[w]}</span>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -181,14 +176,12 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
               </p>
             )}
           </div>
-
-          {/* Collapse button at bottom */}
+          {/* Collapse button at bottom of expanded view */}
           <button
             onClick={() => setExpanded(false)}
             className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mx-auto"
           >
-            Collapse
-            <ChevronUp className="h-4 w-4" />
+            Collapse ↑
           </button>
         </>
       )}

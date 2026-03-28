@@ -138,58 +138,14 @@ export function extractParticipants(raw: string): string[] {
 }
 
 /**
- * Calculate week labels based on TODAY's date (not chat messages).
- * Always shows the 4 most recent Mon–Fri weeks relative to today.
- * Format: "Mar 24 – 28" or "Mar 24 – Apr 4" if cross-month.
+ * Calculate real week labels from message timestamps.
+ * Returns labels like "Mar W2", "Mar W3", etc.
  */
-export function getWeekLabels(_messages?: ParsedMessage[]): WeekLabel[] {
-  const today = new Date();
-  const todayDay = today.getDay();
-  const mondayOffset = todayDay === 0 ? 6 : todayDay - 1;
-  const thisMonday = new Date(today);
-  thisMonday.setDate(today.getDate() - mondayOffset);
-  thisMonday.setHours(0, 0, 0, 0);
-
-  const weekStarts = [
-    new Date(thisMonday.getTime() - 21 * 86400000),
-    new Date(thisMonday.getTime() - 14 * 86400000),
-    new Date(thisMonday.getTime() - 7 * 86400000),
-    thisMonday,
-  ];
-
-  const keys: ("W1" | "W2" | "W3" | "W4")[] = ["W1", "W2", "W3", "W4"];
-
-  return weekStarts.map((start, i) => {
-    const friday = new Date(start.getTime() + 4 * 86400000);
-    const mStart = MONTH_NAMES[start.getMonth()];
-    const mEnd = MONTH_NAMES[friday.getMonth()];
-    const label = mStart === mEnd
-      ? `${mStart} ${start.getDate()} – ${friday.getDate()}`
-      : `${mStart} ${start.getDate()} – ${mEnd} ${friday.getDate()}`;
-    return { key: keys[i], label };
-  });
-}
-
 /**
- * Count messages from a specific user grouped by week and daily for most recent week.
+ * Get fixed 4-week window based on today's date (not message timestamps).
+ * Always returns the 4 most recent Mon-Fri weeks counting back from today.
  */
-export function countMessages(messages: ParsedMessage[], userName: string): ParsedCounts {
-  const userMessages = messages.filter(
-    (m) => m.sender.toLowerCase() === userName.toLowerCase()
-  );
-
-  if (userMessages.length === 0) {
-    return {
-      weekly: { W1: 0, W2: 0, W3: 0, W4: 0 },
-      daily: { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 },
-    };
-  }
-
-  const sorted = [...userMessages].sort(
-    (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
-  );
-
-  // Use TODAY's date for week slots, matching getWeekLabels
+function getFixedWeekStarts(): Date[] {
   const today = new Date();
   const todayDay = today.getDay();
   const mondayOffset = todayDay === 0 ? 6 : todayDay - 1;
@@ -197,18 +153,50 @@ export function countMessages(messages: ParsedMessage[], userName: string): Pars
   w4Monday.setDate(today.getDate() - mondayOffset);
   w4Monday.setHours(0, 0, 0, 0);
 
-  const weekStarts = [
-    new Date(w4Monday.getTime() - 21 * 86400000),
-    new Date(w4Monday.getTime() - 14 * 86400000),
-    new Date(w4Monday.getTime() - 7 * 86400000),
-    w4Monday,
+  return [
+    new Date(w4Monday.getTime() - 21 * 86400000), // W1
+    new Date(w4Monday.getTime() - 14 * 86400000), // W2
+    new Date(w4Monday.getTime() - 7 * 86400000),  // W3
+    w4Monday,                                       // W4
   ];
+}
 
+/**
+ * Calculate fixed week labels from today's date.
+ * Messages parameter is kept for API compat but ignored.
+ */
+export function getWeekLabels(_messages?: ParsedMessage[]): WeekLabel[] {
+  const weekStarts = getFixedWeekStarts();
+  const keys: ("W1" | "W2" | "W3" | "W4")[] = ["W1", "W2", "W3", "W4"];
+
+  return weekStarts.map((monday, i) => {
+    const friday = new Date(monday.getTime() + 4 * 86400000);
+    const mStart = MONTH_NAMES[monday.getMonth()];
+    const mEnd = MONTH_NAMES[friday.getMonth()];
+    const label = mStart === mEnd
+      ? `${mStart} ${monday.getDate()} – ${friday.getDate()}`
+      : `${mStart} ${monday.getDate()} – ${mEnd} ${friday.getDate()}`;
+    return { key: keys[i], label };
+  });
+}
+
+/**
+ * Count messages from a specific user grouped by week and daily for most recent week.
+ */
+/**
+ * Count messages grouped by the fixed 4-week window from today's date.
+ */
+export function countMessages(messages: ParsedMessage[], userName: string): ParsedCounts {
+  const userMessages = messages.filter(
+    (m) => m.sender.toLowerCase() === userName.toLowerCase()
+  );
+
+  const weekStarts = getFixedWeekStarts();
   const weekly = { W1: 0, W2: 0, W3: 0, W4: 0 };
   const daily = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 };
   const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  for (const msg of sorted) {
+  for (const msg of userMessages) {
     const t = msg.timestamp.getTime();
     if (t >= weekStarts[3].getTime()) {
       weekly.W4++;
