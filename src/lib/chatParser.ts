@@ -14,8 +14,12 @@ export interface WeekLabel {
   label: string; // e.g. "Mar W2"
 }
 
+const DATE_START_RE = /^\d{1,2}\/\d{1,2}/;
+const DAY_START_RE = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)/i;
 const DATE_RE = /^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
 const DAY_RE = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
+const NAME_RE = /^[\p{L}][\p{L}.\s]*$/u;
+const JUNK_PATTERNS = [/begin reference/i, /\bby\s/i, /has an attachment/i, /edited this/i, /reacted with/i];
 
 const DAY_MAP: Record<string, number> = {
   sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
@@ -101,20 +105,35 @@ export function parseTeamsChat(raw: string): ParsedMessage[] {
 }
 
 /**
- * Extract unique participant names — only from lines immediately followed by a valid timestamp.
- */
-/**
- * Extract unique participant names by parsing the chat and collecting all unique senders.
- * This reuses the same parseTeamsChat logic so the name list matches what the AI sees.
+ * Extract unique participant names using strict regex:
+ * A line is a name ONLY if it contains only letters/spaces/dots,
+ * the NEXT line starts with a date or day pattern,
+ * and the line doesn't contain junk phrases.
  */
 export function extractParticipants(raw: string): string[] {
-  const messages = parseTeamsChat(raw);
+  const lines = raw.split("\n");
   const names = new Set<string>();
-  for (const msg of messages) {
-    if (msg.sender.trim()) {
-      names.add(msg.sender.trim());
-    }
+
+  for (let i = 0; i < lines.length - 1; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const nextLine = lines[i + 1].trim();
+    const nextIsTimestamp = DATE_START_RE.test(nextLine) || DAY_START_RE.test(nextLine);
+    if (!nextIsTimestamp) continue;
+
+    // Skip junk lines
+    if (JUNK_PATTERNS.some((p) => p.test(line))) continue;
+
+    // Must be a clean name (letters, spaces, dots only)
+    if (!NAME_RE.test(line)) continue;
+
+    // Reject overly long lines (likely message content)
+    if (line.length > 40) continue;
+
+    names.add(line);
   }
+
   return [...names];
 }
 
