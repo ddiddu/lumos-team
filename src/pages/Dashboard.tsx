@@ -54,7 +54,7 @@ const Dashboard = () => {
       <AppWalkthrough />
 
       <main className="flex-1 overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between px-10 pt-6 pb-0">
+        <div className="flex items-center justify-between px-4 sm:px-10 pt-4 sm:pt-6 pb-0">
           <button
             onClick={() => {
               sessionStorage.removeItem("app_walkthrough_done");
@@ -68,7 +68,7 @@ const Dashboard = () => {
         </div>
         <div className="flex-1 overflow-y-auto">
           {mode === "me" ? (
-            <div className="p-10">
+            <div className="p-4 sm:p-10">
               <MemberProfileView
                 name={userName}
                 status={computeMyStatus()}

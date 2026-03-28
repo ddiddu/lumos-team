@@ -50,10 +50,10 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
   const reversedWeeks = [...weeks].reverse();
 
   return (
-    <div data-tour="project-card" className="rounded-lg border p-8 space-y-6">
+    <div data-tour="project-card" className="rounded-lg border p-4 sm:p-8 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">{project.name}</h3>
+        <h3 className="text-base sm:text-lg font-semibold">{project.name}</h3>
         <Badge variant={statusVariant(project.status)}>{project.status}</Badge>
       </div>
 
