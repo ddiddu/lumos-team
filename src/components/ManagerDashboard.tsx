@@ -70,9 +70,9 @@ function computeStatusFromChat(
   if (analysisResult && analysisResult.projects.length > 0) {
     let worst: MemberStatus = "active";
     for (const p of analysisResult.projects) {
-      const ps = p.status as MemberStatus;
+      const ps = String(p.status) as MemberStatus;
       if (ps === "blocked") return "blocked";
-      if (ps === "quiet" && worst !== "blocked") worst = "quiet";
+      if (ps === "quiet" && worst === "active") worst = "quiet";
     }
     return worst;
   }
