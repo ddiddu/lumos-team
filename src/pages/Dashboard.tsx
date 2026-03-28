@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useLocation, Navigate } from "react-router-dom";
+import { useLocation, Navigate, useNavigate } from "react-router-dom";
+import { HelpCircle } from "lucide-react";
 import MemberProfileView from "@/components/MemberProfileView";
 import AppWalkthrough from "@/components/AppWalkthrough";
 import ManagerDashboard from "@/components/ManagerDashboard";
