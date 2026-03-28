@@ -57,9 +57,10 @@ const statusBadgeVariant = (status: string) => {
 function computeStatusFromChat(
   memberName: string,
   allMessages: ReturnType<typeof parseTeamsChat>,
-  latestTimestamp: Date,
+  _latestTimestamp: Date,
   analysisResult?: AnalysisResult | null
 ): MemberStatus {
+  const now = new Date();
   if (analysisResult && analysisResult.projects.length > 0) {
     let worst: MemberStatus = "active";
     for (const p of analysisResult.projects) {
@@ -77,9 +78,9 @@ function computeStatusFromChat(
 
   const sorted = [...memberMsgs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   const lastMsg = sorted[0];
-  const fourWeeksAgo = new Date(latestTimestamp.getTime() - 28 * 24 * 60 * 60 * 1000);
+  const fourWeeksAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
   if (lastMsg.timestamp < fourWeeksAgo) return "quiet";
-  const threeDaysAgo = new Date(latestTimestamp.getTime() - 3 * 24 * 60 * 60 * 1000);
+  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
   if (lastMsg.timestamp < threeDaysAgo) return "quiet";
 
   const recentMsgs = sorted.slice(0, 10);
