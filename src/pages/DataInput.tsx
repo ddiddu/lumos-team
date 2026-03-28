@@ -60,8 +60,12 @@ const DataInput = () => {
       const counts = countMessages(parsed, userName);
       const weekLabels = getWeekLabels(parsed);
 
+      // Pass participant names so AI uses the exact same names for members
+      const otherParticipants = participants.filter(
+        (n) => n.toLowerCase() !== userName.toLowerCase()
+      );
       const { data, error } = await supabase.functions.invoke("analyze-chat", {
-        body: { chatData, userName, messageCounts: counts, weekLabels },
+        body: { chatData, userName, messageCounts: counts, weekLabels, participantNames: otherParticipants },
       });
 
       clearInterval(interval);

@@ -63,7 +63,7 @@ serve(async (req) => {
   }
 
   try {
-    const { chatData, userName, messageCounts, weekLabels } = await req.json();
+    const { chatData, userName, messageCounts, weekLabels, participantNames } = await req.json();
     if (!chatData || typeof chatData !== "string" || chatData.trim().length === 0) {
       return new Response(JSON.stringify({ error: "chatData is required" }), {
         status: 400,
