@@ -51,6 +51,11 @@ const steps: WalkthroughStep[] = [
     waitForSelector: "[data-tour='weekly-breakdown']",
   },
   {
+    selector: "[data-tour='message-activity']",
+    title: "Message Activity",
+    description: "See how active they've been week by week — and spot when things went quiet.",
+  },
+  {
     selector: "[data-tour='members']",
     title: "Collaborators",
     description: "See who they work with directly.",
