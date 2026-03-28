@@ -311,9 +311,9 @@ const DataInput = () => {
   }
 
   const sources = [
-    { id: "teams" as const, label: "Teams", icon: MessageSquare, disabled: true },
-    { id: "slack" as const, label: "Slack", icon: Hash, disabled: true },
-    { id: "txt" as const, label: "Paste Text", icon: FileText, disabled: false },
+    { id: "teams" as const, label: "Teams", icon: MessageSquare, disabled: true, price: "$199 / team" },
+    { id: "slack" as const, label: "Slack", icon: Hash, disabled: true, price: "$199 / team" },
+    { id: "txt" as const, label: "Paste Text", icon: FileText, disabled: false, price: null },
   ];
 
   const expanded = source === "txt";
