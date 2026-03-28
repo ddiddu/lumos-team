@@ -11,11 +11,43 @@ import type { AnalysisResult } from "@/types/analysis";
 type Source = "teams" | "slack" | "txt" | null;
 type Phase = "input" | "loading" | "pick-user";
 
+interface ClassifiedProject {
+  canonical_name: string;
+  aliases: string[];
+  members: string[];
+}
+
+function filterChatForMember(rawChat: string, memberName: string): string {
+  const messages = parseTeamsChat(rawChat);
+  const memberMsgs = messages.filter(
+    (m) => m.sender.toLowerCase() === memberName.toLowerCase()
+  );
+  return memberMsgs
+    .map((m) => {
+      const month = m.timestamp.getMonth() + 1;
+      const day = m.timestamp.getDate();
+      const hours = m.timestamp.getHours();
+      const minutes = m.timestamp.getMinutes();
+      const ampm = hours >= 12 ? "PM" : "AM";
+      const h12 = hours % 12 || 12;
+      const ts = `${month}/${day} ${h12}:${String(minutes).padStart(2, "0")} ${ampm}`;
+      return `${m.sender}\n${ts}\n${m.text}`;
+    })
+    .join("\n\n");
+}
+
+const LOADING_STEPS = [
+  { key: "messages", label: "Reading messages..." },
+  { key: "projects", label: "Identifying projects..." },
+  { key: "team", label: "Analyzing team members..." },
+  { key: "dashboard", label: "Building your dashboard..." },
+];
+
 const DataInput = () => {
   const [chatData, setChatData] = useState("");
   const [source, setSource] = useState<Source>(null);
   const [phase, setPhase] = useState<Phase>("input");
-  const [loadingText, setLoadingText] = useState("");
+  const [activeStep, setActiveStep] = useState(0);
   const [participants, setParticipants] = useState<string[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,7 +60,7 @@ const DataInput = () => {
     }
 
     setPhase("loading");
-    setLoadingText("Reading participants...");
+    setActiveStep(0);
 
     setTimeout(() => {
       const names = extractParticipants(chatData);
@@ -44,40 +76,116 @@ const DataInput = () => {
 
   const analyzeWithUser = async (userName: string) => {
     setPhase("loading");
-    const loadingMessages = [
-      "Identifying projects...",
-      "Analyzing work style...",
-      "Generating insights...",
-    ];
-    let msgIndex = 0;
-    setLoadingText(loadingMessages[0]);
-
-    const interval = setInterval(() => {
-      msgIndex = (msgIndex + 1) % loadingMessages.length;
-      setLoadingText(loadingMessages[msgIndex]);
-    }, 2000);
+    setActiveStep(0); // Reading messages...
+    const isManager = incomingMode === "manager";
 
     try {
       const parsed = parseTeamsChat(chatData);
       const counts = countMessages(parsed, userName);
       const weekLabels = getWeekLabels(parsed);
-
-      // Pass participant names so AI uses the exact same names for members
       const otherParticipants = participants.filter(
         (n) => n.toLowerCase() !== userName.toLowerCase()
       );
+
+      // Step 1: Reading messages — done
+      setActiveStep(1); // Identifying projects...
+
+      // Classify all projects first
+      let canonicalProjects: ClassifiedProject[] = [];
+      try {
+        const { data: classifyData, error: classifyError } = await supabase.functions.invoke("classify-projects", {
+          body: { chatData, participantNames: participants },
+        });
+        if (!classifyError && classifyData?.projects) {
+          canonicalProjects = classifyData.projects;
+        }
+      } catch (e) {
+        console.warn("Project classification failed, continuing without canonical names:", e);
+      }
+
+      // Step 2: Analyze the selected user (Me mode)
+      setActiveStep(isManager ? 2 : 1); // Analyzing team members / Identifying projects
+
       const { data, error } = await supabase.functions.invoke("analyze-chat", {
-        body: { chatData, userName, messageCounts: counts, weekLabels, participantNames: otherParticipants },
+        body: {
+          chatData,
+          userName,
+          messageCounts: counts,
+          weekLabels,
+          participantNames: otherParticipants,
+          perspective: "second", // Me mode = second person
+          canonicalProjects,
+        },
       });
 
-      clearInterval(interval);
       if (error) throw error;
 
       const result = data as AnalysisResult;
       result.weekLabels = weekLabels.map((w) => ({ key: w.key, label: w.label }));
-      navigate("/dashboard", { state: { result, userName, chatData, initialMode: incomingMode === "manager" ? "manager" : "me" } });
+
+      // Step 3: If manager mode, analyze all team members
+      let managerResults: Record<string, AnalysisResult> | undefined;
+
+      if (isManager) {
+        setActiveStep(2); // Analyzing team members...
+
+        const memberAnalyses: Record<string, AnalysisResult> = {};
+        const analyzePromises = otherParticipants.map(async (memberName) => {
+          try {
+            const filteredChat = filterChatForMember(chatData, memberName);
+            if (!filteredChat.trim()) return;
+
+            const memberMessages = parsed.filter(
+              (m) => m.sender.toLowerCase() === memberName.toLowerCase()
+            );
+            const mCounts = countMessages(memberMessages, memberName);
+            const mWeekLabels = getWeekLabels(memberMessages);
+            const mOtherParticipants = participants.filter(
+              (n) => n.toLowerCase() !== memberName.toLowerCase()
+            );
+
+            const { data: mData, error: mError } = await supabase.functions.invoke("analyze-chat", {
+              body: {
+                chatData: filteredChat,
+                userName: memberName,
+                messageCounts: mCounts,
+                weekLabels: mWeekLabels,
+                participantNames: mOtherParticipants,
+                perspective: "third", // Manager mode = third person
+                canonicalProjects,
+              },
+            });
+
+            if (!mError && mData) {
+              const mResult = mData as AnalysisResult;
+              mResult.weekLabels = mWeekLabels.map((w) => ({ key: w.key, label: w.label }));
+              memberAnalyses[memberName] = mResult;
+            }
+          } catch (e) {
+            console.error(`Analysis failed for ${memberName}:`, e);
+          }
+        });
+
+        await Promise.all(analyzePromises);
+        managerResults = memberAnalyses;
+      }
+
+      setActiveStep(3); // Building your dashboard...
+
+      // Small delay for the last step to be visible
+      await new Promise((r) => setTimeout(r, 500));
+
+      navigate("/dashboard", {
+        state: {
+          result,
+          userName,
+          chatData,
+          initialMode: isManager ? "manager" : "me",
+          managerResults,
+          canonicalProjects,
+        },
+      });
     } catch (e) {
-      clearInterval(interval);
       console.error(e);
       toast.error("Analysis failed. Please try again.");
       setPhase("input");
@@ -86,9 +194,24 @@ const DataInput = () => {
 
   if (phase === "loading") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
-        <p className="text-muted-foreground">{loadingText}</p>
+        <div className="space-y-3 text-center">
+          {LOADING_STEPS.map((step, i) => (
+            <p
+              key={step.key}
+              className={`text-sm transition-all duration-300 ${
+                i === activeStep
+                  ? "text-foreground font-medium"
+                  : i < activeStep
+                  ? "text-muted-foreground/60 line-through"
+                  : "text-muted-foreground/30"
+              }`}
+            >
+              {step.label}
+            </p>
+          ))}
+        </div>
       </div>
     );
   }
