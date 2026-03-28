@@ -44,7 +44,7 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
   ]
 }
 
-IMPORTANT: The "members" array should list every other participant EXCEPT the analyzed person. Infer each person's role from context.
+IMPORTANT: The "members" array should list the participants involved in THIS specific project based on who sent messages about it. If canonical project data with member lists is provided, use those members. Infer each person's role from context.
 
 IMPORTANT: The "message_counts" field will be provided as pre-calculated data. Use those exact values. Do NOT make up counts.
 

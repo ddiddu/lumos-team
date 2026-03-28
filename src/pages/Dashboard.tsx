@@ -36,20 +36,23 @@ const Dashboard = () => {
         <main className="flex-1 overflow-y-auto p-10">
           <div className="mb-8 flex items-center justify-between">
             <h2 className="text-xl font-semibold">Projects</h2>
-            <div className="flex gap-2">
-              <Button variant="secondary" size="sm" className="opacity-40 cursor-not-allowed" disabled>
-                Slack
-              </Button>
-              <Button variant="secondary" size="sm" className="opacity-40 cursor-not-allowed" disabled>
-                Teams
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setMode("manager")}
+            <div className="inline-flex rounded-lg border p-0.5">
+              <button
+                onClick={() => setMode("me")}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  mode === "me" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
               >
-                Manager mode
-              </Button>
+                Me
+              </button>
+              <button
+                onClick={() => setMode("manager")}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  mode === "manager" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Manager
+              </button>
             </div>
           </div>
           <div className="space-y-6">
@@ -62,14 +65,23 @@ const Dashboard = () => {
         <main className="flex-1 overflow-hidden flex flex-col">
           <div className="flex items-center justify-between px-10 pt-6 pb-0">
             <div />
-            <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
+            <div className="inline-flex rounded-lg border p-0.5">
+              <button
                 onClick={() => setMode("me")}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  mode === "me" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
               >
-                Me mode
-              </Button>
+                Me
+              </button>
+              <button
+                onClick={() => setMode("manager")}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  mode === "manager" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Manager
+              </button>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
