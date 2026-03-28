@@ -10,11 +10,11 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
 
 {
   "work_style": {
-    "role": "the person's apparent role",
-    "style": "their communication/work style",
-    "likes": "things they seem to enjoy or prefer",
-    "dislikes": "things they seem to avoid or dislike",
-    "speech_habits": "notable speech patterns or phrases"
+    "role": "short role title (max 5 words)",
+    "style": "1 short sentence max",
+    "likes": "1 short sentence max, comma-separated keywords",
+    "dislikes": "1 short sentence max, comma-separated keywords",
+    "speech_habits": "1 short sentence max, comma-separated phrases"
   },
   "projects": [
     {
@@ -109,6 +109,23 @@ serve(async (req) => {
 
     const jsonStr = content.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
     const result = JSON.parse(jsonStr);
+
+    // Force overwrite message_counts with pre-calculated values
+    if (messageCounts && result.projects?.length > 0) {
+      result.projects[0].message_counts = {
+        W1: messageCounts.weekly?.W1 || 0,
+        W2: messageCounts.weekly?.W2 || 0,
+        W3: messageCounts.weekly?.W3 || 0,
+        W4: messageCounts.weekly?.W4 || 0,
+        W4_daily: {
+          Mon: messageCounts.daily?.Mon || 0,
+          Tue: messageCounts.daily?.Tue || 0,
+          Wed: messageCounts.daily?.Wed || 0,
+          Thu: messageCounts.daily?.Thu || 0,
+          Fri: messageCounts.daily?.Fri || 0,
+        },
+      };
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -13,13 +13,13 @@ const Dashboard = () => {
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <aside className="w-[240px] shrink-0 border-r p-6">
+      <aside className="w-[260px] shrink-0 border-r p-8">
         <WorkStyleCard workStyle={result.work_style} />
       </aside>
 
       {/* Main */}
-      <main className="flex-1 p-6">
-        <div className="mb-6 flex items-center justify-between">
+      <main className="flex-1 p-10">
+        <div className="mb-8 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Projects</h2>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" className="opacity-40 cursor-not-allowed" disabled>
@@ -33,7 +33,7 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-6">
           {result.projects.map((project, i) => (
             <ProjectCard key={i} project={project} />
           ))}
