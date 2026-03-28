@@ -14,7 +14,9 @@ CLASSIFICATION RULES:
 3. Merge different names that refer to the same project into ONE canonical name. For example: "2024 inference", "2024 email data", "predictions.csv project" should all become one project like "2024 Email Inference & Classification".
 4. Short back-and-forth exchanges within a few minutes are almost always about the same project — do NOT split them.
 
-For each project, list ALL participants involved (by exact name as they appear in the chat) — anyone who sent messages about that project.
+For each project:
+- List ALL participants involved (by exact name as they appear in the chat) — anyone who sent messages about that project.
+- Include a "chunks" array containing the EXACT relevant message blocks from the chat that belong to this project. Each chunk should be a continuous block of messages (including sender names and timestamps) copied verbatim from the chat. Include enough context (a few messages before/after) for each conversation thread.
 
 Return ONLY valid JSON with this structure:
 {
@@ -22,7 +24,8 @@ Return ONLY valid JSON with this structure:
     {
       "canonical_name": "Clear, descriptive project name",
       "aliases": ["other names used in chat for this project"],
-      "members": ["Person A", "Person B"]
+      "members": ["Person A", "Person B"],
+      "chunks": ["verbatim block of messages about this project", "another block..."]
     }
   ]
 }
