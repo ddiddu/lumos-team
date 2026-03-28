@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useLocation, Navigate } from "react-router-dom";
-import WorkStyleCard from "@/components/WorkStyleCard";
-import ProjectCard from "@/components/ProjectCard";
+import MemberProfileView from "@/components/MemberProfileView";
 import DashboardWalkthrough from "@/components/DashboardWalkthrough";
 import ManagerDashboard from "@/components/ManagerDashboard";
 import type { AnalysisResult } from "@/types/analysis";
@@ -40,41 +39,46 @@ const Dashboard = () => {
 
   if (!result) return <Navigate to="/" replace />;
 
+  // Compute overall status from projects
+  const computeMyStatus = (): "active" | "blocked" | "quiet" => {
+    if (!result.projects.length) return "active";
+    let worst: "active" | "blocked" | "quiet" = "active";
+    for (const p of result.projects) {
+      if (p.status === "blocked") return "blocked";
+      if (p.status === "quiet" && worst === "active") worst = "quiet";
+    }
+    return worst;
+  };
+
   return (
     <div className="flex h-screen overflow-hidden">
       {mode === "me" && <DashboardWalkthrough />}
 
-      {/* Sidebar — only in Me mode */}
-      {mode === "me" && (
-        <aside data-tour="work-style" className="w-[260px] shrink-0 border-r p-8 overflow-y-auto">
-          <WorkStyleCard workStyle={result.work_style} />
-        </aside>
-      )}
-
-      {/* Main */}
-      {mode === "me" ? (
-        <main className="flex-1 overflow-y-auto p-10">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Projects</h2>
-            <ModeToggle mode={mode} setMode={setMode} />
-          </div>
-          <div className="space-y-6">
-            {result.projects.map((project, i) => (
-              <ProjectCard key={i} project={project} weekLabels={result.weekLabels} />
-            ))}
-          </div>
-        </main>
-      ) : (
-        <main className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between px-10 pt-6 pb-0">
-            <div />
-            <ModeToggle mode={mode} setMode={setMode} />
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            <ManagerDashboard result={result} userName={userName} weekLabels={result.weekLabels} chatData={chatData} managerResults={managerResults} />
-          </div>
-        </main>
-      )}
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between px-10 pt-6 pb-0">
+          <div />
+          <ModeToggle mode={mode} setMode={setMode} />
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {mode === "me" ? (
+            <div className="p-10">
+              <MemberProfileView
+                name={userName}
+                status={computeMyStatus()}
+                result={result}
+              />
+            </div>
+          ) : (
+            <ManagerDashboard
+              result={result}
+              userName={userName}
+              weekLabels={result.weekLabels}
+              chatData={chatData}
+              managerResults={managerResults}
+            />
+          )}
+        </div>
+      </main>
     </div>
   );
 };

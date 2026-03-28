@@ -4,7 +4,7 @@ import { ChevronRight, ArrowLeft } from "lucide-react";
 import type { AnalysisResult, WeekLabelInfo } from "@/types/analysis";
 import { parseTeamsChat, extractParticipants } from "@/lib/chatParser";
 import ManagerWalkthrough from "@/components/ManagerWalkthrough";
-import ProjectCard from "@/components/ProjectCard";
+import MemberProfileView from "@/components/MemberProfileView";
 
 type MemberStatus = "active" | "blocked" | "quiet";
 
