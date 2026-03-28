@@ -151,11 +151,11 @@ const DataInput = () => {
 
   // ── Loading Phase ──
   const DID_YOU_KNOW = [
-    { emoji: "💡", title: "Did you know?", body: "60% of work time goes to 'work about work' — chasing status, coordinating, and figuring out what everyone's doing.", source: "Asana, 10,000 knowledge workers" },
-    { emoji: "💬", title: "From a real manager:", body: "A lot of my messages get lost in Teams. I never know if my team actually saw them.", source: "Audit Team Manager" },
-    { emoji: "🔍", title: "Did you know?", body: "The average employee receives 153 Teams messages per day.", source: "Microsoft WorkLab" },
-    { emoji: "⚡", title: "Did you know?", body: "Teams that reduce status chasing ship faster and burn out less.", source: undefined },
-    { emoji: "🥚", title: undefined, body: "This tool was made by Jisu Kim. Say hi if you see her. 👋", source: undefined },
+    { icon: Lightbulb, title: "Did you know?", body: "60% of work time goes to 'work about work' — chasing status, coordinating, and figuring out what everyone's doing.", source: "Asana, 10,000 knowledge workers" },
+    { icon: MessageSquare, title: "From a real manager:", body: "A lot of my messages get lost in Teams. I never know if my team actually saw them.", source: "Audit Team Manager" },
+    { icon: Search, title: "Did you know?", body: "The average employee receives 153 Teams messages per day.", source: "Microsoft WorkLab" },
+    { icon: Zap, title: "Did you know?", body: "Teams that reduce status chasing ship faster and burn out less.", source: undefined },
+    { icon: Sparkles, title: undefined, body: "This tool was made by Jisu Kim. Reach out to her if you have any feedback or questions.", source: undefined },
   ];
 
   const [funFactIndex, setFunFactIndex] = useState(0);
