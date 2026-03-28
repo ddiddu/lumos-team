@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { parseTeamsChat, extractParticipants, getWeekLabels } from "@/lib/chatParser";
-import { MessageSquare, Hash, FileText, ArrowLeft, Loader2 } from "lucide-react";
+import { MessageSquare, Hash, FileText, ArrowLeft, Loader2, Lightbulb, Search, Zap, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import type { AnalysisResult } from "@/types/analysis";
 
@@ -151,11 +151,11 @@ const DataInput = () => {
 
   // ── Loading Phase ──
   const DID_YOU_KNOW = [
-    { emoji: "💡", title: "Did you know?", body: "60% of work time goes to 'work about work' — chasing status, coordinating, and figuring out what everyone's doing.", source: "Asana, 10,000 knowledge workers" },
-    { emoji: "💬", title: "From a real manager:", body: "A lot of my messages get lost in Teams. I never know if my team actually saw them.", source: "Audit Team Manager" },
-    { emoji: "🔍", title: "Did you know?", body: "The average employee receives 153 Teams messages per day.", source: "Microsoft WorkLab" },
-    { emoji: "⚡", title: "Did you know?", body: "Teams that reduce status chasing ship faster and burn out less.", source: undefined },
-    { emoji: "🥚", title: undefined, body: "This tool was made by Jisu Kim. Say hi if you see her. 👋", source: undefined },
+    { icon: Lightbulb, title: "Did you know?", body: "60% of work time goes to 'work about work' — chasing status, coordinating, and figuring out what everyone's doing.", source: "Asana, 10,000 knowledge workers" },
+    { icon: MessageSquare, title: "From a real manager:", body: "A lot of my messages get lost in Teams. I never know if my team actually saw them.", source: "Audit Team Manager" },
+    { icon: Search, title: "Did you know?", body: "The average employee receives 153 Teams messages per day.", source: "Microsoft WorkLab" },
+    { icon: Zap, title: "Did you know?", body: "Teams that reduce status chasing ship faster and burn out less.", source: undefined },
+    { icon: Sparkles, title: undefined, body: "This tool was made by Jisu Kim. Reach out to her if you have any feedback or questions.", source: undefined },
   ];
 
   const [funFactIndex, setFunFactIndex] = useState(0);
@@ -201,7 +201,9 @@ const DataInput = () => {
             funFactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
           }`}
         >
-          <p className="text-2xl mb-2">{card.emoji}</p>
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted mx-auto mb-3">
+            <card.icon className="h-4 w-4 text-foreground" />
+          </div>
           {card.title && <p className="text-xs font-semibold text-foreground mb-2">{card.title}</p>}
           <p className="text-sm text-muted-foreground leading-relaxed">{card.body}</p>
           {card.source && <p className="text-[11px] text-muted-foreground/60 mt-2">— {card.source}</p>}
