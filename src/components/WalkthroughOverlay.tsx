@@ -22,41 +22,54 @@ const WalkthroughOverlay = ({ steps, storageKey, maskId }: WalkthroughOverlayPro
 
   useEffect(() => {
     if (sessionStorage.getItem(storageKey)) return;
-    const timer = setTimeout(() => setCurrentStep(0), 600);
+    const timer = setTimeout(() => setCurrentStep(0), 800);
     return () => clearTimeout(timer);
   }, [storageKey]);
+
+  // Scroll element into view on step change
+  useEffect(() => {
+    if (currentStep < 0 || currentStep >= steps.length) return;
+    const step = steps[currentStep];
+    if (!step.selector) return;
+    const timeout = setTimeout(() => {
+      const el = document.querySelector(step.selector);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [currentStep, steps]);
 
   const updateRect = useCallback(() => {
     if (currentStep < 0 || currentStep >= steps.length) return;
     const step = steps[currentStep];
-    const el = document.querySelector(step.selector);
-    if (el) {
-      setRect(el.getBoundingClientRect());
+    if (!step.selector) {
+      setRect(null);
+      return;
     }
+    const el = document.querySelector(step.selector);
+    if (el) setRect(el.getBoundingClientRect());
   }, [currentStep, steps]);
 
   useEffect(() => {
     updateRect();
+    const id = setInterval(updateRect, 250);
     window.addEventListener("resize", updateRect);
-    const scrollables = document.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']");
-    scrollables.forEach((el) => el.addEventListener("scroll", updateRect));
-    window.addEventListener("scroll", updateRect, true);
     return () => {
+      clearInterval(id);
       window.removeEventListener("resize", updateRect);
-      scrollables.forEach((el) => el.removeEventListener("scroll", updateRect));
-      window.removeEventListener("scroll", updateRect, true);
     };
   }, [updateRect]);
 
+  // Wait for element after clickToReveal
   useEffect(() => {
     if (!waitingForReveal || currentStep < 0) return;
-    const step = steps[currentStep];
-    if (!step.waitForSelector) {
+    const nextStep = steps[currentStep + 1];
+    if (!nextStep?.waitForSelector) {
       setWaitingForReveal(false);
+      setCurrentStep((s) => s + 1);
       return;
     }
     const interval = setInterval(() => {
-      const el = document.querySelector(step.waitForSelector!);
+      const el = document.querySelector(nextStep.waitForSelector!);
       if (el) {
         setWaitingForReveal(false);
         setCurrentStep((s) => s + 1);
@@ -74,13 +87,11 @@ const WalkthroughOverlay = ({ steps, storageKey, maskId }: WalkthroughOverlayPro
     const step = steps[currentStep];
     if (step.clickToReveal) {
       const btn = document.querySelector(step.clickToReveal) as HTMLElement;
-      if (btn) {
-        btn.click();
-        const nextStep = steps[currentStep + 1];
-        if (nextStep?.waitForSelector) {
-          setWaitingForReveal(true);
-          return;
-        }
+      if (btn) btn.click();
+      const nextStep = steps[currentStep + 1];
+      if (nextStep?.waitForSelector) {
+        setWaitingForReveal(true);
+        return;
       }
       setCurrentStep((s) => s + 1);
       return;
@@ -96,25 +107,56 @@ const WalkthroughOverlay = ({ steps, storageKey, maskId }: WalkthroughOverlayPro
     if (currentStep > 0) setCurrentStep((s) => s - 1);
   };
 
-  if (currentStep < 0 || !rect || waitingForReveal) return null;
+  if (currentStep < 0 || waitingForReveal || currentStep >= steps.length) return null;
 
   const step = steps[currentStep];
+  const isCentered = !step.selector;
   const pad = 8;
 
-  // Calculate tooltip position: prefer bottom, fall back to top
+  // Centered mode (final step, no element highlight)
+  if (isCentered) {
+    return (
+      <>
+        <div className="fixed inset-0 z-50 bg-black/60" />
+        <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none">
+          <div className="pointer-events-auto rounded-lg border bg-card shadow-xl p-6 space-y-4 max-w-sm text-center">
+            <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Step {currentStep + 1} of {steps.length}
+            </span>
+            <div>
+              <h4 className="text-base font-semibold">{step.title}</h4>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{step.description}</p>
+            </div>
+            <div className="flex items-center justify-center gap-2 pt-1">
+              <Button variant="ghost" size="sm" onClick={prev} className="text-xs h-7 px-2">
+                ← Prev
+              </Button>
+              <Button size="sm" onClick={dismiss} className="text-xs h-8 px-4">
+                Done
+              </Button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (!rect) return null;
+
   const tooltipWidth = 320;
   const gap = 12;
   let tooltipLeft = rect.left + rect.width / 2 - tooltipWidth / 2;
   let tooltipTop = rect.top + rect.height + pad + gap;
   let arrowSide: "top" | "bottom" = "top";
 
-  // If tooltip would go off bottom of screen, position above
-  if (tooltipTop + 160 > window.innerHeight) {
-    tooltipTop = rect.top - pad - gap - 160;
+  if (tooltipTop + 180 > window.innerHeight) {
+    tooltipTop = rect.top - pad - gap - 180;
     arrowSide = "bottom";
   }
-
-  // Keep tooltip within horizontal bounds
+  if (tooltipTop < 16) {
+    tooltipTop = rect.top + rect.height + pad + gap;
+    arrowSide = "top";
+  }
   if (tooltipLeft < 16) tooltipLeft = 16;
   if (tooltipLeft + tooltipWidth > window.innerWidth - 16) {
     tooltipLeft = window.innerWidth - 16 - tooltipWidth;
@@ -122,7 +164,6 @@ const WalkthroughOverlay = ({ steps, storageKey, maskId }: WalkthroughOverlayPro
 
   return (
     <>
-      {/* Overlay */}
       <div className="fixed inset-0 z-50 pointer-events-none">
         <svg className="absolute inset-0 w-full h-full">
           <defs>
@@ -145,8 +186,6 @@ const WalkthroughOverlay = ({ steps, storageKey, maskId }: WalkthroughOverlayPro
             mask={`url(#${maskId})`}
           />
         </svg>
-
-        {/* Highlight ring */}
         <div
           className="absolute rounded-lg ring-2 ring-primary ring-offset-2 ring-offset-background transition-all duration-300"
           style={{
@@ -158,49 +197,31 @@ const WalkthroughOverlay = ({ steps, storageKey, maskId }: WalkthroughOverlayPro
         />
       </div>
 
-      {/* Floating tooltip card */}
       <div
         className="fixed z-[60] pointer-events-auto"
-        style={{
-          left: tooltipLeft,
-          top: tooltipTop,
-          width: tooltipWidth,
-        }}
+        style={{ left: tooltipLeft, top: tooltipTop, width: tooltipWidth }}
       >
-        {/* Arrow */}
         {arrowSide === "top" && (
           <div
             className="absolute -top-2 w-4 h-4 rotate-45 bg-card border-l border-t border-border"
             style={{ left: Math.min(Math.max(rect.left + rect.width / 2 - tooltipLeft - 8, 12), tooltipWidth - 20) }}
           />
         )}
-
         <div className="rounded-lg border bg-card shadow-lg p-4 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               Step {currentStep + 1} of {steps.length}
             </span>
-            <button
-              onClick={dismiss}
-              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <button onClick={dismiss} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
               Skip tour
             </button>
           </div>
-
           <div>
             <h4 className="text-sm font-semibold">{step.title}</h4>
             <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{step.description}</p>
           </div>
-
           <div className="flex items-center justify-between pt-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={prev}
-              disabled={currentStep === 0}
-              className="text-xs h-7 px-2"
-            >
+            <Button variant="ghost" size="sm" onClick={prev} disabled={currentStep === 0} className="text-xs h-7 px-2">
               ← Prev
             </Button>
             <Button size="sm" onClick={next} className="text-xs h-7 px-3">
@@ -208,7 +229,6 @@ const WalkthroughOverlay = ({ steps, storageKey, maskId }: WalkthroughOverlayPro
             </Button>
           </div>
         </div>
-
         {arrowSide === "bottom" && (
           <div
             className="absolute -bottom-2 w-4 h-4 rotate-45 bg-card border-r border-b border-border"
