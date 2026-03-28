@@ -172,7 +172,7 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
   if (selectedMember) {
     const memberResult = selectedMember.analysisResult;
     return (
-      <div className="p-4 sm:p-10 overflow-y-auto h-full">
+      <div className="p-10 overflow-y-auto h-full">
       <button
           data-tour="back-to-team"
           onClick={() => setSelectedMember(null)}
@@ -195,7 +195,7 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
   }
 
   return (
-    <div className="p-4 sm:p-10 overflow-y-auto h-full">
+    <div className="p-10 overflow-y-auto h-full">
       <div data-tour="team-overview" className="mb-8">
         <h2 className="text-xl font-semibold">Team overview</h2>
         <p className="text-sm text-muted-foreground mt-1">
@@ -224,7 +224,7 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {displayMembers.map((member) => {
           const projects = member.analysisResult?.projects || [];
           return (

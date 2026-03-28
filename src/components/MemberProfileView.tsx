@@ -61,9 +61,9 @@ const MemberProfileView = ({ name, status, result }: MemberProfileViewProps) => 
 
       {/* Work style blocks */}
       {result.work_style && (
-        <div data-tour="work-style" className="flex flex-wrap gap-2 sm:gap-3">
+        <div data-tour="work-style" className="flex flex-wrap gap-3">
           {workStyleFields.map(({ label, key }) => (
-            <div key={key} className="bg-secondary rounded-md px-3 py-2.5 sm:px-4 sm:py-3 min-w-[120px] sm:min-w-[140px] max-w-[240px]">
+            <div key={key} className="bg-secondary rounded-md px-4 py-3 min-w-[140px] max-w-[240px]">
               <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
               <p className="text-sm leading-snug">{result.work_style[key]}</p>
             </div>

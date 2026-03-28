@@ -262,7 +262,7 @@ const DataInput = () => {
 
   if (phase === "loading") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
         <div className="space-y-3 text-center">
           {LOADING_STEPS.map((step, i) => (
@@ -286,20 +286,20 @@ const DataInput = () => {
 
   if (phase === "pick-user") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md space-y-6 sm:space-y-8 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center px-4">
+        <div className="w-full max-w-md space-y-8 text-center">
           <div>
-            <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">Who are you?</h2>
+            <h2 className="text-2xl font-semibold tracking-tight">Who are you?</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Select your name from the chat participants.
             </p>
           </div>
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+          <div className="flex flex-wrap justify-center gap-3">
             {participants.map((name) => (
               <button
                 key={name}
                 onClick={() => analyzeWithUser(name)}
-                className="rounded-lg border-2 border-border bg-card px-4 py-2.5 sm:px-5 sm:py-3 text-sm font-medium transition-all duration-200 hover:border-primary hover:shadow-md hover:bg-primary/5"
+                className="rounded-lg border-2 border-border bg-card px-5 py-3 text-sm font-medium transition-all duration-200 hover:border-primary hover:shadow-md hover:bg-primary/5"
               >
                 {name}
               </button>
@@ -319,16 +319,16 @@ const DataInput = () => {
   const expanded = source === "txt";
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 py-8">
-      <div className="w-full max-w-2xl space-y-6 sm:space-y-8">
+    <div className="flex min-h-screen flex-col items-center justify-center px-4">
+      <div className="w-full max-w-2xl space-y-8">
         <div className="text-center">
-          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">Choose data source</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">Choose data source</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Select where your chat data is coming from.
           </p>
         </div>
 
-        <div className="flex justify-center gap-3 sm:gap-4">
+        <div className="flex justify-center gap-4">
           {sources.map((s) => {
             const isActive = source === s.id;
             return (
@@ -339,7 +339,7 @@ const DataInput = () => {
                 className={`
                   group flex flex-col items-center justify-center gap-2 rounded-xl border-2 
                   transition-all duration-300 ease-out
-                  ${expanded ? "h-16 w-16 sm:h-20 sm:w-20" : "h-20 w-20 sm:h-28 sm:w-28"}
+                  ${expanded ? "h-20 w-20" : "h-28 w-28"}
                   ${s.disabled ? "opacity-40 cursor-not-allowed border-border bg-card" : ""}
                   ${isActive ? "border-primary bg-primary/5 shadow-sm" : "border-border bg-card hover:border-primary/50 hover:shadow-sm"}
                 `}
@@ -384,7 +384,7 @@ const DataInput = () => {
             <div className="px-px">
               <Textarea
                 placeholder="Paste your Teams or Slack chat here..."
-                className="min-h-[200px] sm:min-h-[260px] resize-none font-mono text-xs sm:text-sm"
+                className="min-h-[260px] resize-none font-mono text-sm"
                 value={chatData}
                 onChange={(e) => setChatData(e.target.value)}
               />
