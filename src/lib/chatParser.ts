@@ -122,15 +122,6 @@ export function extractParticipants(raw: string): string[] {
     const nextIsTimestamp = DATE_START_RE.test(nextLine) || DAY_START_RE.test(nextLine);
     if (!nextIsTimestamp) continue;
 
-    // Skip junk lines
-    if (JUNK_PATTERNS.some((p) => p.test(line))) continue;
-
-    // Must be a clean name (letters, spaces, dots only)
-    if (!NAME_RE.test(line)) continue;
-
-    // Reject overly long lines (likely message content)
-    if (line.length > 40) continue;
-
     names.add(line);
   }
 
@@ -174,8 +165,8 @@ export function getWeekLabels(_messages?: ParsedMessage[]): WeekLabel[] {
     const mStart = MONTH_NAMES[monday.getMonth()];
     const mEnd = MONTH_NAMES[friday.getMonth()];
     const label = mStart === mEnd
-      ? `${mStart} ${monday.getDate()} – ${friday.getDate()}`
-      : `${mStart} ${monday.getDate()} – ${mEnd} ${friday.getDate()}`;
+      ? `${mStart} ${monday.getDate()}-${friday.getDate()}`
+      : `${mStart} ${monday.getDate()}-${mEnd} ${friday.getDate()}`;
     return { key: keys[i], label };
   });
 }

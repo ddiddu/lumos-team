@@ -115,7 +115,7 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
             <div className="space-y-1.5">
               {reversedWeeks.map((w) => (
                 <div key={w} className="flex gap-3 text-sm">
-                  <span className="font-medium text-muted-foreground w-16 shrink-0">
+                  <span className="font-medium text-muted-foreground w-24 shrink-0 whitespace-nowrap">
                     {labelMap[w] || w}
                   </span>
                   <span>{project.weekly_summary[w]}</span>
