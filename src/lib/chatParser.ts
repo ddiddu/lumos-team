@@ -107,13 +107,24 @@ export function extractParticipants(raw: string): string[] {
   const lines = raw.split("\n");
   const names = new Set<string>();
 
-  const DATE_TS = /^\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{2}\s+(AM|PM)$/i;
+  const DATE_TS = /^\d{1,2}\/\d{1,2}(\s+\d{1,2}:\d{2}\s+(AM|PM))?$/i;
   const DAY_TS = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}:\d{2}\s+(AM|PM)$/i;
+  const NAME_RE = /^[\p{L}][\p{L}.\s]*$/u;
 
   for (let i = 0; i < lines.length - 1; i++) {
     const line = lines[i].trim();
-    if (line === "") continue;
     const nextLine = lines[i + 1].trim();
+    const lowerLine = line.toLowerCase();
+
+    if (
+      line === "" ||
+      lowerLine.includes("begin reference") ||
+      lowerLine.includes("by ") ||
+      !NAME_RE.test(line)
+    ) {
+      continue;
+    }
+
     if (DATE_TS.test(nextLine) || DAY_TS.test(nextLine)) {
       names.add(line);
     }
