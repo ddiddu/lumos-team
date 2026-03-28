@@ -53,7 +53,15 @@ const DashboardWalkthrough = () => {
   useEffect(() => {
     updateRect();
     window.addEventListener("resize", updateRect);
-    return () => window.removeEventListener("resize", updateRect);
+    // Listen to scroll on all scrollable ancestors so highlight follows content
+    const scrollables = document.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']");
+    scrollables.forEach((el) => el.addEventListener("scroll", updateRect));
+    window.addEventListener("scroll", updateRect, true);
+    return () => {
+      window.removeEventListener("resize", updateRect);
+      scrollables.forEach((el) => el.removeEventListener("scroll", updateRect));
+      window.removeEventListener("scroll", updateRect, true);
+    };
   }, [updateRect]);
 
   const next = () => {
