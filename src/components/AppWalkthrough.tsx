@@ -69,17 +69,13 @@ const steps: WalkthroughStep[] = [
   },
   {
     selector: "",
-    title: "That's Waypoint",
-    description: "Know where your team stands.",
+    title: "That's Lumos",
+    description: "Illuminate your team's path forward.",
   },
 ];
 
 const AppWalkthrough = () => (
-  <WalkthroughOverlay
-    steps={steps}
-    storageKey="app_walkthrough_done"
-    maskId="app-walkthrough-mask"
-  />
+  <WalkthroughOverlay steps={steps} storageKey="app_walkthrough_done" maskId="app-walkthrough-mask" />
 );
 
 export default AppWalkthrough;
