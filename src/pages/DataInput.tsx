@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -10,32 +9,47 @@ import { MessageSquare, Hash, FileText } from "lucide-react";
 import type { AnalysisResult } from "@/types/analysis";
 
 type Source = "teams" | "slack" | "txt" | null;
+type Phase = "input" | "loading" | "pick-user";
 
 const DataInput = () => {
-  const [userName, setUserName] = useState("");
   const [chatData, setChatData] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingText, setLoadingText] = useState("");
   const [source, setSource] = useState<Source>(null);
+  const [phase, setPhase] = useState<Phase>("input");
+  const [loadingText, setLoadingText] = useState("");
+  const [participants, setParticipants] = useState<string[]>([]);
+  const [parsedMessages, setParsedMessages] = useState<ReturnType<typeof parseTeamsChat>>([]);
   const navigate = useNavigate();
 
-  const loadingMessages = [
-    "Identifying projects...",
-    "Analyzing work style...",
-    "Generating insights...",
-  ];
-
-  const analyze = async () => {
-    if (!userName.trim()) {
-      toast.error("Please enter your name first.");
-      return;
-    }
+  const extractParticipants = () => {
     if (!chatData.trim()) {
       toast.error("Please paste some chat data first.");
       return;
     }
 
-    setIsLoading(true);
+    setPhase("loading");
+    setLoadingText("Reading participants...");
+
+    setTimeout(() => {
+      const parsed = parseTeamsChat(chatData);
+      setParsedMessages(parsed);
+      const names = [...new Set(parsed.map((m) => m.sender))];
+      if (names.length === 0) {
+        toast.error("No participants found. Check your chat format.");
+        setPhase("input");
+        return;
+      }
+      setParticipants(names);
+      setPhase("pick-user");
+    }, 800);
+  };
+
+  const analyzeWithUser = async (userName: string) => {
+    setPhase("loading");
+    const loadingMessages = [
+      "Identifying projects...",
+      "Analyzing work style...",
+      "Generating insights...",
+    ];
     let msgIndex = 0;
     setLoadingText(loadingMessages[0]);
 
@@ -45,8 +59,7 @@ const DataInput = () => {
     }, 2000);
 
     try {
-      const parsed = parseTeamsChat(chatData);
-      const counts = countMessages(parsed, userName);
+      const counts = countMessages(parsedMessages, userName);
 
       const { data, error } = await supabase.functions.invoke("analyze-chat", {
         body: { chatData, userName, messageCounts: counts },
@@ -61,15 +74,41 @@ const DataInput = () => {
       clearInterval(interval);
       console.error(e);
       toast.error("Analysis failed. Please try again.");
-      setIsLoading(false);
+      setPhase("input");
     }
   };
 
-  if (isLoading) {
+  if (phase === "loading") {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
         <p className="text-muted-foreground">{loadingText}</p>
+      </div>
+    );
+  }
+
+  if (phase === "pick-user") {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center px-4">
+        <div className="w-full max-w-md space-y-8 text-center">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">Who are you?</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Select your name from the chat participants.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3">
+            {participants.map((name) => (
+              <button
+                key={name}
+                onClick={() => analyzeWithUser(name)}
+                className="rounded-lg border-2 border-border bg-card px-5 py-3 text-sm font-medium transition-all duration-200 hover:border-primary hover:shadow-md hover:bg-primary/5"
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -92,7 +131,6 @@ const DataInput = () => {
           </p>
         </div>
 
-        {/* Source cards */}
         <div className="flex justify-center gap-4">
           {sources.map((s) => {
             const isActive = source === s.id;
@@ -122,7 +160,6 @@ const DataInput = () => {
           })}
         </div>
 
-        {/* Input area — slides in */}
         <div
           className={`overflow-hidden transition-all duration-400 ease-out ${
             expanded
@@ -131,12 +168,6 @@ const DataInput = () => {
           }`}
         >
           <div className="space-y-4 pt-2">
-            <Input
-              placeholder="Your name (e.g. Jisu Kim)"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-            />
-
             <Textarea
               placeholder="Paste your Teams or Slack chat here..."
               className="min-h-[260px] resize-none font-mono text-sm"
@@ -145,7 +176,7 @@ const DataInput = () => {
             />
 
             <div className="flex justify-end">
-              <Button onClick={analyze} disabled={!chatData.trim() || !userName.trim()}>
+              <Button onClick={extractParticipants} disabled={!chatData.trim()}>
                 Analyze
               </Button>
             </div>
