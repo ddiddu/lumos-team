@@ -85,6 +85,18 @@ const Dashboard = () => {
           )}
         </div>
       </main>
+
+      {/* Floating tour button */}
+      <button
+        onClick={() => {
+          sessionStorage.removeItem("app_walkthrough_done");
+          window.dispatchEvent(new CustomEvent("restart-walkthrough"));
+        }}
+        className="fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card shadow-md hover:shadow-lg transition-shadow"
+        title="Restart tour"
+      >
+        <HelpCircle className="h-5 w-5 text-muted-foreground" />
+      </button>
     </div>
   );
 };
