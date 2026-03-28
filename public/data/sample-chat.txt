@@ -1,486 +1,362 @@
-1 chat with new messages
-Has context menu
 Teams
 
-SAFENET Compliance - Policy Team
+Lumos - Recommendation Engine
 
 Conversation
-
-Shared
-
-Notes
-
-Has context menu
-
-Meet now
-
-I have updated the classifier giving it dir... by Lisa Chen, has an attachment.
-Lisa Chen
-1/28 4:47 PM
-
-I have updated the classifier giving it directions to identify the content's region of origin. If you open in Notepad++ it is on lines 24-27 and 31-33. Screenshot for ease.
-
-image
-
-SAFENET_Classifier_Prompt.txt
-
-3 replies
-Last reply 1/29
-
-Follow
-I updated the SAFE flags for 469 of 915 ite... by Jisu Kim
-2/2 2:14 PM
-Jisu Kim
-
-I updated the SAFE flags for 469 of 915 content items this week. Over the last week, all non–false-positive items (16/16) and all SAFENET = Yes items (16/16) were successfully captured by the SAFE flag.
-
-Jisu   Kim  - when you get a chance, could ... by Maya Torres
-Maya Torres
-2/10 3:29 AM
-
-Jisu Kim - when you get a chance, could you provide the same update from this week as you did last week (above)? Thank you
-
-1 Like reaction.
-
-Tom   Fuller ,  Sandra   Okafor  - Below pl... by Maya Torres
-Maya Torres
-2/10 5:11 AM
-
-Tom Fuller, Sandra Okafor - Below please find a quick update from last Tuesday's meeting (today's meeting was cancelled due to the offsite.)
-
-1 - We provided Claire the ongoing SAFE flag results prior to her content review, so she could prioritize accordingly. So far, we have only seen one week where the classified Y/N flags and threshold did not match all of Claire's flags. We researched those 6 items to uncover that they were all basically the same content, but also not from an international creator such that SAFENET would not apply. This was important, as it changed our LLM prompt composition needs.
-
-2 - We provided Claire with a list of 100 content IDs where we performed LLM analysis. These 100 also included a new LLM flag where "flagged" means Yes, there is indication of a SAFENET concern within the content. We also noted that there were two different models used in the LLM responses but that should not be an issue moving forward.
-
-3 - We provided Claire with a copy of the current prompt used for the analysis of the 100 content IDs.
-
-4 - We demo'd the BridgeAI LLM call for Claire, who noted that a 2 min wait for a response was not ideal for high-volume reviews.
-
-5 - Because we made changes in the prompt to account for the earlier classification miss, we were able to demo the use of LLMs to determine the domestic vs. international content origin. Claire noted that it wasn't always easy to tell. The response was either Yes / No / Maybe.
-
-Recommendations for project completion:
-
-1 - establish two prompts (one Summary decision and one with Analytical details).
-2 - establish two sets of content filters as extractions from the Analytical prompt
-     A - International origin? (Yes / No / Maybe)
-     B - SAFENET Concerns? (Yes / No / Maybe)
-3 - automate the summary prompt for each content item to extract flags.
-4 - provide the on-demand analytical prompt for detailed rationale as needed for the policy team.
-5 - automate the classification model SAFE flags as well.
-6 - continue to spot review the SAFENET Concern Y/N label for use in retraining the model.
-
-I plan to talk about this in today's meeting as this SAFENET policy project has used 3 significant AI-related technologies: Classification, LLMs and Extraction for filters.
-
-I updated the SAFE flags last night for 427... by Jisu Kim
-2/10 11:56 AM
-Jisu Kim
-
-I updated the SAFE flags last night for 427 of 747 content items this week. Over the last week, all non–false-positive items (8/8) and all SAFENET = Yes items (12/12) were successfully captured by the SAFE flag. Maya Torres
-
-1 Like reaction.
-
-Over the last week, all non–false-positive... by Jisu Kim
-2/16 1:31 PM
-Jisu Kim
-
-Over the last week, all non–false-positive items (17/17) and all SAFENET = Yes items (17/17) were successfully captured by the SAFE flag. Maya Torres
-
-10 replies
-Last reply 2/16
-
-I noticed there are 5513 content items thi... by Jisu Kim
-2/16 1:37 PM
-Jisu Kim
-
-I noticed there are 5513 content items this week, which is unusually high compared to previous weeks. Of these, 5190 are above the threshold. Can anyone clarify if this spike is expected or if there might be a data issue?
-
-Tom   Fuller  - this does not seem correct ... by Maya Torres
-Maya Torres
-2/16 2:15 PM
-
-Tom Fuller - this does not seem correct at all, does it?
-
-I am sharing SAFENET weekly updates.xlsx... by Jisu Kim, has an attachment.
-2/18 1:59 PM
-Jisu Kim
-
-I am sharing SAFENET weekly updates.xlsx.
-
-SAFENET weekly updates.xlsx
-personal > jisu_kim_streamvox_com
-
-This week Updated SAFE flags for 121 of 311... by Jisu Kim
-2/23 5:12 PM
-Jisu Kim
-
-This week
-Updated SAFE flags for 121 of 311 items (38.91%).
-Increased the threshold from 0.000932915892917662 to 0.00830809399485588.
-The adjustment was based on prior weekly runs where the model achieved 100% recall of target items.
-As a result of the higher threshold, the percentage of flagged items decreased compared to last week.
-Last week
-All non–false positive items (21) and all SAFENET = Yes items (21) were successfully captured by the SAFE flag.
-When ranked by confidence (descending), all 21 SAFENET=Yes items were within the top 29.45%.
-The spike in flagged volume was due to the inclusion of items with isDeleted = 1.
-The actual valid item count was 309 (after excluding deleted entries).
-
-Jisu   Kim  - can you update the spreadshe... by Maya Torres
-Maya Torres
-2/23 5:16 PM
-
-Jisu Kim - can you update the spreadsheet you started? I would like to show this if we meet with the SAFENET team this week.
-
-1 reply
-Last reply 2/23
-
-And thank you for that update
-Maya Torres
-2/23 5:18 PM
-
-And thank you for that update.
-
-1 Like reaction.
-
-Maya   Torres This week Updated SAFE flags... by Jisu Kim
-3/2 1:00 PM
-Jisu Kim
-
-Maya Torres
-This week
-Updated SAFE flags for 160 of 409 items (39.12%).
-Last week
-All SAFENET = Yes items (18) were successfully captured by the SAFE flag.
-When ranked by confidence (descending), all 18 SAFENET=Yes items were within the top 26.60%.
-Updated the spreadsheet with this week's results.
-
-Great - thank you!
-Maya Torres
-3/2 1:10 PM
-
-Great - thank you!
-
-1 Like reaction.
-
-I updated SAFE flags for 154 of 367 items... by Jisu Kim
-3/9 11:56 AM
-Jisu Kim
-
-I updated SAFE flags for 154 of 367 items (41.96%). Maya Torres
-
-1 Like reaction.
-
-Nice work!
-Maya Torres
-3/9 12:13 PM
-
-Nice work!
-
-1 Heart reaction.
-
-Maya   Torres ,  Tom   Fuller , sharing an ... by Jisu Kim
-3/10 2:42 PM
-Jisu Kim
-
-Maya Torres, Tom Fuller, sharing an operational plan for the SAFENET model:
-Weekly SAFE flag updates with an additional 3-5% sample from items the model predicted as not flagged, to reduce selection bias and blind-spot lock-in.
-Weekly recall monitoring on newly labeled data. If recall drops below 100% for 2 consecutive weeks, retrain the model or lower the threshold.
-If recall stays at 100% for 4+ consecutive weeks, gradually increase the threshold to improve precision.
-
-2 replies
-Last reply 3/10
-
-Maya   Torres ,  Tom   Fuller , This week:... by Jisu Kim
-3/16 2:17 PM
-Jisu Kim
-
-Maya Torres, Tom Fuller,
-This week:
-Updated SAFE flags for 184 of 355 items (177 flagged, 7 non-flagged sample) using the automated pipeline.
-Validated that the automated classification pipeline executes end-to-end successfully for this week's batch.
-Identified follow-up engineering tasks for the automation code, including:
-improving fallback logic for edge cases
-refining parts of the automation pipeline for more robust runs
-Last week:
-All SAFENET = Yes items (18) were successfully captured by the SAFE flag.
-
-1 Like reaction.
-
-Great work - should we plan a meeting with ... by Maya Torres
-Maya Torres
-3/16 2:29 PM
-
-Great work - should we plan a meeting with Marco to talk about handoff to his team? When would you feel comfortable to operationalize? Up to you.
-
-1 Like reaction.
-
-1 reply
-Last reply 3/16
-
-Maya   Torres ,  Tom   Fuller , This week:... by Jisu Kim
-Monday 2:00 PM
-Jisu Kim
-
-Maya Torres, Tom Fuller, This week:
-Updated SAFE flags for 216 of 406 items using the automated pipeline (includes flagged and a 4% random sample of non-flagged).
-Fixed the UTF-8 encoding problem in the code.
-Last week:
-All SAFENET = Yes items (16) were successfully captured by the SAFE flag.
-
-1 Like reaction.
-
-Great - thank you
-Maya Torres
-Monday 2:58 PM
-
-Great - thank you.
-
-1 Like reaction.
-
----
-
-1 chat with new messages
-Has context menu
-Teams
-
-Harmful Content Detection - AI Team
-
-Posts
-
-Shared
-
-Notes
-
-Has context menu
 
 Meet now
 
 Jisu Kim
 2/4 8:54 PM
-02/05 Weekly Sync
-Hi Maya Torres, Amir Sharma, Tom Fuller, Derek Walsh, sharing updates for tomorrow's meeting. StreamVox_Weekly.docx
 
-I'm currently blocked on a remaining piece of the v1 vs. v2 model comparison, so the summary focuses on the research direction and early experiments around incorporating image scanning into the detection workflow. I'll add the v1 vs. v2 findings once the blocker is resolved.
+Hi Sarah Yoon, Daniel Cho — sharing the prep doc for tomorrow's reco engine sync.
 
-StreamVox_Weekly.docx
-personal > jisu_kim_streamvox_com
+RecoEngine_Feb.docx
+personal > jisu_kim_lumos_com
 
-2 Hundred points reactions.
+2 reactions.
 
-Derek Walsh
-2/5 9:37 AM
-Looks awesome! Thanks, Jisu Kim!
+Marcus Webb
+2/5 8:45 AM
 
-1 Heart reaction.
+Jisu Kim — quick question before tomorrow's sync: are we planning to A/B test v2 against v1 or just roll it out?
+
+Jisu Kim
+2/5 8:55 AM
+
+Marcus Webb — A/B test first. Will share the plan in the doc.
+
+1 Like reaction.
+
+Daniel Cho
+2/5 9:00 AM
+
+Jisu Kim — looks good. One question: are we including bot sessions in the training data?
+
+Jisu Kim
+2/5 9:20 AM
+
+Daniel Cho — no, filtering those out. Good catch.
+
+1 Like reaction.
 
 Jisu Kim
 2/9 2:07 PM
-Hi Maya Torres, Derek Walsh, I'm updating the image scanning analysis in the same doc.
 
-In the 30% training split, the majority of detection-missing cases are driven by image-based content, consistent with the current ingestion behavior discussed in previous meetings (no image scanning), and confirms that text-based content is generally detected successfully. I reviewed a sample of these images, and they generally contain limited extractable signals. Exploring image scanning integration is the more relevant next step here.
+Sarah Yoon, Daniel Cho — new model is in staging. Running validation this week. Early results look promising. One edge case to resolve: new users with no history need a proper fallback.
 
-For video thumbnails and image attachments, I'm quantifying the amount of signal added when scanning succeeds and whether very large additions could negatively affect model training or performance.
+Daniel Cho
+2/9 4:00 PM
 
-Jisu Kim
-2/9 2:36 PM
-current models:
-v1: baseline (text only)
-v2: + content category label
-v2.1: excluding low-signal tokens
-next iterations:
-v3: + image metadata (excluding low-signal tokens) in progress
-v4: + image scanning for visual content
-there are ~7k+ image-based content items in the training set
-questions to resolve: Where in the pipeline should image scanning run (ingest vs offline batch)?
-next step (potentially in collaboration with Derek Walsh):
-define image scanning workflow for a subset (e.g., 100-500 items) to validate:
-detection success rate
-runtime/cost
-how to integrate signals into v4 training data
-
-2 Like reactions.
-
-Jisu Kim
-2/9 4:26 PM
-Image scanning pipeline for visual content
-Hi Ryan Park, Derek Walsh, and team. I'd like to get advice on an image scanning pipeline.
-
-context:
-v4: + image scanning for visual content
-there are ~7k+ image-based content items in the training set
-
-proposed next step (potentially in collaboration with Derek Walsh):
-define image scanning workflow for a subset to validate:
-detection success rate
-runtime/cost
-how to integrate into v4 training data
-
-Proposed pipeline:
-Identify image-based content
-Run image scanning on those items
-Store results back into the content database
-
-Implementation questions:
-Where are the content binaries stored?
-I see the original filenames and content_type in CONTENT_MEDIA_STORE
-Where is the root storage location for the actual image files?
-What is the preferred way to access or export them for scanning?
-Is there a more efficient pipeline design you'd recommend?
-
-Maya Torres
-2/10 4:00 AM
-Jisu Kim - Thank you for the updates. A few questions:
-Can you explain again the rationale for excluding low-signal tokens?
-Tom Fuller would be the best person to help architect the production pipeline for image scanning.
-Tom Fuller would also be able to provide info on where the content binaries live.
-
-Jisu Kim
-2/12 11:46 AM
-Hi all, sharing the document on Research and Testing Toward Ongoing Model Improvements. StreamVox_Weekly.docx
-
-StreamVox_Weekly.docx
-personal > jisu_kim_streamvox_com
+Jisu Kim — session state is in the SESSIONS table, joined to EVENTS on session_id. Happy to walk you through it anytime.
 
 1 Like reaction.
 
-Jisu Kim
-3/5 10:30 AM
-2023 Tier1 Content Detection
-Ryan Park I am sharing the Tier1 content detection results on the 2023 unlabeled dataset. This is the highest confidence batch, the top ~10% of content items (validation precision: 95.74%). Results are sorted by confidence score in descending order. I will aim to start delivering 2024 detection results next week.
+Daniel Cho
+2/14 2:00 PM
 
-detections_2023_tier1.csv
-
-1 Like reaction.
-
-Ryan Park
-2/6 12:19 PM
-Database query for obtaining content items
-Jisu Kim - Please see file which has the database query you can use to get the content details.
-
-Notes:
-Please try to avoid running anything big during Singapore working hours.
-Query has been updated so column ContentText now includes everything from the content record.
-I would recommend running only for 1 month at a time.
-When I was testing the query it took 1 hour 15 mins to retrieve the 2023 content items.
-Extra helpful columns:
-IsRemoved = Shows a 1 if the content has been removed
-Category = Content category label
-InDetectionTool = Shows a 1 if the item is included in the detection tool
+Jisu Kim — here's the query for pulling event data.
 
 Query_for_Jisu.xlsx
 SharedDocs > Shared Documents
 
 1 Like reaction.
 
-Maya Torres
-3/10 11:20 AM
-FP = False Positive
+Jisu Kim
+2/12 11:46 AM
+
+Updated doc with session context design options.
+
+RecoEngine_Feb.docx
+personal > jisu_kim_lumos_com
+
+1 Like reaction.
+
+Marcus Webb
+3/3 2:00 PM
+
+Jisu Kim — any early signal from the v3 staging tests? Curious how the new user fallback is holding up.
+
+Jisu Kim
+3/3 2:30 PM
+
+Marcus Webb — looking good so far. No major issues. Full report coming end of week.
+
+1 Like reaction.
+
+Marcus Webb
+3/3 2:45 PM
+
+Jisu Kim — great. Let me know if you need me to test anything on the frontend side.
+
+Jisu Kim
+3/5 10:30 AM
+
+Daniel Cho — sharing the A/B analysis. v2 is winning on CTR and session length for returning users.
+
+RecoEngine_AB.xlsx
+personal > jisu_kim_lumos_com
+
+1 Like reaction.
+
+Sarah Yoon
+3/5 10:45 AM
+
+Jisu Kim — great. Let's discuss the new user experience in this week's sync.
+
+1 Like reaction.
+
+Daniel Cho
+3/10 12:00 PM
+
+Jisu Kim, Sarah Yoon — new session schema is live. You should be good to go on the fallback logic now.
 
 1 Like reaction.
 
 Jisu Kim
-3/10 12:06 PM
-Ryan Park, mike.reed, are "QC Safe" and "QC Flagged" labeled correctly? "QC Review Safe" and "QC Safe" are both marked as safe.
+3/16 10:00 AM
 
-Ryan Park
-3/10 12:07 PM
-Yes. Anything starting with QC is a priority item where the reviewer confirmed a policy concern to be checked by the QC team.
+Sarah Yoon, Daniel Cho — v3 is in final review. New user fallback is working well in staging. Targeting production push end of this week.
+
+Daniel Cho
+3/16 10:30 AM
+
+Jisu Kim — staging data looks clean on my end. No anomalies.
+
+1 Like reaction.
+
+Marcus Webb
+3/16 10:45 AM
+
+Jisu Kim — the frontend metrics widget is ready to pull in the v3 data. Let me know when you're ready to connect it.
+
+Jisu Kim
+3/16 10:50 AM
+
+Marcus Webb — perfect timing. Can we sync briefly this afternoon?
+
+Marcus Webb
+3/16 11:00 AM
+
+Jisu Kim — yes, 3pm works.
+
+Sarah Yoon
+3/16 11:00 AM
+
+Jisu Kim — great progress. Let's confirm the production timeline in today's sync.
 
 1 Like reaction.
 
 Jisu Kim
-Monday 10:33 AM
-2024 Detection Set
-Sharing the detections.csv for the 2024 content dataset after category filtering (excluding removed or inactive content).
+Monday 10:00 AM
 
-Overall distribution (Total 335,465 records):
-Flagged: 91,823 (~27%)
-Safe: 243,642 (~73%)
+Sarah Yoon, Daniel Cho — v3 is live in production as of this morning. Monitoring closely. Will share a performance summary end of week.
 
-detections_2024.csv
-personal > jisu_kim_streamvox_com
+Daniel Cho
+Monday 10:30 AM
+
+Jisu Kim — seeing healthy engagement signals in the dashboard already. Looking good.
 
 1 Like reaction.
 
-Maya Torres
-Monday 2:59 PM
-Also, we will be changing the labels on the output:
-Safe ---> Approved
-Flagged ----> Needs Review
+Sarah Yoon
+Monday 11:00 AM
+
+Jisu Kim — amazing. Great work on this one.
 
 1 Like reaction.
 
 Jisu Kim
-Tuesday 3:57 PM
-Ryan Park, I just realized that the header is missing. The correct header should be: Category,Content_ID,predicted_label,predicted_class,predicted_confidence,predicted_confidence_1
+Tuesday 2:00 PM
 
-predicted_confidence_1 is the confidence for the "Flagged" class for each row.
+Daniel Cho — one thing to watch: seeing slightly higher latency for new users. Might be the fallback logic adding overhead. Can you check the query performance on your end?
 
-2 Like reactions.
+Daniel Cho
+Tuesday 2:30 PM
 
-Jisu Kim
-Wednesday 10:28 AM
-03/25 Weekly Model Review
-Ryan Park, Maya Torres,
+Jisu Kim — on it. Will report back within the hour.
 
-Sharing a few questions and updates on the project.
+Daniel Cho
+Tuesday 3:00 PM
 
-False positive analysis:
-Lisa Chen and I conducted a false positive analysis. A couple of questions:
-The query includes content from the same creator cluster (not just the most recent item). If intentional, could you share the reasoning?
-The model is picking up international creator content. Is there a way to filter those out?
-
-For model improvement:
-I am working on adding semantic embeddings (ModernBERT), as suggested by Amir Sharma. The model currently uses TF-IDF so I'm exploring whether embeddings can better capture contextual signals.
-
-StreamVox_Model.xlsx
-personal > jisu_kim_streamvox_com
-
-Maya Torres
-Wednesday 12:17 PM
-I think international creator content will generally be relevant, but we may not have had many for training.
-
-1 Like reaction.
+Jisu Kim — found it. The fallback query is doing a full table scan. I'll optimize and push a fix today.
 
 Jisu Kim
-Thursday 10:06 AM
-Ryan Park, following up on the first bullet point. I'm wondering why the query includes content from the same creator cluster rather than just the most recent item.
+Tuesday 3:10 PM
 
-Ryan Park
-Thursday 10:08 AM
-Jisu Kim - Sorry, forgot to reply to that one!
-We normally treat each content item separately, and the policy reviewers normally review them in chronological order.
-Creator clusters can get out of sync so keeping only the latest item could mean missing critical flagged content.
+Daniel Cho — perfect, thank you!
 
 1 Like reaction.
 
-Lisa Chen
-Thursday 1:19 PM
-Low Engagement Content
-I wonder if low-engagement content with policy concerns would still be worth flagging even if the reach is small. It could be used as a test of whether creators are consistently violating policies across different engagement levels.
+Sarah Yoon
+Wednesday 9:00 AM
 
-Lisa Chen
-Wednesday 5:15 PM
-Confirmation of Content Label Questions
-mike.reed Ryan Park
+Jisu Kim, Daniel Cho — quick sprint check-in. How are we tracking?
 
-Jisu Kim provided the false positives for me to review. We identified that the labeling may be incorrect for the Safe and No Policy Concern labels.
+Jisu Kim
+Wednesday 9:30 AM
 
-Findings that we need confirmed:
-No Policy Concern - when and how are reviewers using this label?
-Safe - when and how are reviewers using this label?
+Sarah Yoon — v3 is stable. Latency issue is resolved. Working on the next set of improvements for the new user experience.
+
+Daniel Cho
+Wednesday 9:45 AM
+
+Sarah Yoon — data side is all good. No blockers on my end.
+
+1 Like reaction.
+
+Sarah Yoon
+Wednesday 10:00 AM
+
+Great. Keep it up team.
 
 1 Like reaction.
 
-Lisa Chen
-Thursday 1:16 PM
-Jisu - how does the model handle content where the category flag was not set?
+Jisu Kim
+Thursday 10:00 AM
 
-Lisa Chen
-Thursday 1:23 PM
-Maya - have we reached out to the review teams to let them know that AI moderation is being rolled out and we rely on category flags to train models?
+Sarah Yoon, Daniel Cho — sharing the weekly performance summary for v3. CTR is up 12% for returning users. New users still showing neutral — expected for now.
 
-Maya Torres
-Thursday 3:51 PM
-No. Let's discuss separately.
+RecoEngine_v3_Week1.xlsx
+personal > jisu_kim_lumos_com
+
+Daniel Cho
+Thursday 10:30 AM
+
+Jisu Kim — numbers look right on my end. The new user cohort will take another week or two to show signal.
+
+Sarah Yoon
+Thursday 11:00 AM
+
+Jisu Kim — solid first week. Let's review next steps in Friday's sync.
 
 1 Like reaction.
+
+---
+
+Teams
+
+Lumos - Product Design
+
+Conversation
+
+Meet now
+
+Priya Nair
+2/9 10:00 AM
+
+Sarah Yoon — sharing the design spec for the profile settings redesign.
+
+Settings_Redesign_v1.figma
+
+Sarah Yoon
+2/9 11:00 AM
+
+Priya Nair — looks good. Let's align on scope in this week's sync. Marcus Webb — can you join too? Will need your input on the technical feasibility.
+
+1 Like reaction.
+
+Marcus Webb
+2/12 3:00 PM
+
+Sarah Yoon, Priya Nair — caught up on the spec. The nav restructure looks right. Mobile concerns I had are addressed in v2. Will do a full review once v2 is ready.
+
+1 Like reaction.
+
+Priya Nair
+2/16 2:00 PM
+
+Marcus Webb, Sarah Yoon — v2 is ready. Navigation flattened, mobile layout done, empty states in. Marcus Webb — need your sign-off before we move to implementation.
+
+Settings_Redesign_v2.figma
+
+Sarah Yoon
+2/16 3:00 PM
+
+Marcus Webb — please review when you get a chance. Priya needs your feedback to move forward.
+
+Priya Nair
+2/19 10:00 AM
+
+Marcus Webb — following up on the v2 review. No rush but want to make sure it's on your radar.
+
+Priya Nair
+2/24 9:00 AM
+
+Marcus Webb — checking in again on the settings redesign review. We're a week out now. Sarah Yoon — flagging so you're aware.
+
+Sarah Yoon
+2/24 9:30 AM
+
+Marcus Webb — can you take a look this week? Priya is ready to move to implementation once she has your feedback.
+
+Priya Nair
+3/2 10:00 AM
+
+Sarah Yoon — still haven't heard from Marcus Webb. At this point the delay is pushing our implementation timeline.
+
+Sarah Yoon
+3/2 10:30 AM
+
+Priya Nair — understood. I'll reach out to him directly today.
+
+Priya Nair
+3/9 9:00 AM
+
+Sarah Yoon — any update from Marcus Webb? I've been sitting on the finalized designs for three weeks now.
+
+Sarah Yoon
+3/9 9:30 AM
+
+Priya Nair — spoke to him briefly last week. He said he'd get to it this week.
+
+Priya Nair
+3/16 10:00 AM
+
+Sarah Yoon — still nothing from Marcus Webb. I can't start implementation without his review. This is becoming a real problem.
+
+Sarah Yoon
+3/16 10:30 AM
+
+Priya Nair — I hear you. I'll make it a priority conversation today.
+
+1 Like reaction.
+
+Priya Nair
+Monday 9:00 AM
+
+Sarah Yoon — week 5 and still no review from Marcus Webb. The implementation window is closing fast.
+
+Sarah Yoon
+Monday 9:30 AM
+
+Priya Nair — this is unacceptable. I'll sort it out today.
+
+1 Like reaction.
+
+Priya Nair
+Tuesday 2:00 PM
+
+Sarah Yoon — any news?
+
+Sarah Yoon
+Tuesday 2:30 PM
+
+Priya Nair — left him a message. Waiting to hear back.
+
+Priya Nair
+Wednesday 10:00 AM
+
+Sarah Yoon — I've done everything I can on my end. The designs are finalized and ready. I just need Marcus Webb's sign-off to proceed.
+
+Sarah Yoon
+Wednesday 10:30 AM
+
+Priya Nair — I know. I'm on it.
+
+1 Like reaction.
+
+Priya Nair
+Thursday 9:00 AM
+
+Sarah Yoon — any update on Marcus Webb? We're going to miss the sprint deadline at this rate.

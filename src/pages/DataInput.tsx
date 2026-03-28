@@ -207,8 +207,40 @@ const DataInput = () => {
         }
       }
 
-      // ── STEP 5: Navigate to dashboard ──
+      // ── STEP 5: Apply 7-day quiet rule & navigate ──
       setActiveStep(4); // Building your dashboard...
+
+      // Post-process: if a member has no messages in the last 7 days
+      // on a specific project, override that project's status to "quiet"
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const applyQuietRule = (result: AnalysisResult, memberName: string) => {
+        const memberMsgs = parsed.filter(
+          (m) => m.sender.toLowerCase() === memberName.toLowerCase()
+        );
+        const recentMsgs = memberMsgs.filter((m) => m.timestamp >= sevenDaysAgo);
+        for (const project of result.projects) {
+          // Check if member has any recent messages at all
+          // If no messages in last 7 days, all projects are quiet
+          if (recentMsgs.length === 0) {
+            project.status = "quiet";
+          } else {
+            // Check W4 (current week) message count — if 0, project is quiet
+            if (project.message_counts && project.message_counts.W4 === 0) {
+              project.status = "quiet";
+            }
+          }
+        }
+      };
+
+      applyQuietRule(meResult, userName);
+      if (managerResults) {
+        for (const [memberName, result] of Object.entries(managerResults)) {
+          applyQuietRule(result, memberName);
+        }
+      }
+
       await new Promise((r) => setTimeout(r, 500));
 
       navigate("/dashboard", {
