@@ -75,7 +75,7 @@ const DataInput = () => {
 
       const result = data as AnalysisResult;
       result.weekLabels = weekLabels.map((w) => ({ key: w.key, label: w.label }));
-      navigate("/dashboard", { state: { result, userName, chatData } });
+      navigate("/dashboard", { state: { result, userName, chatData, initialMode: incomingMode === "manager" ? "manager" : "me" } });
     } catch (e) {
       clearInterval(interval);
       console.error(e);
