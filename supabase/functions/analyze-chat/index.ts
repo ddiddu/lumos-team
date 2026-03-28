@@ -36,7 +36,7 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
         {
           "name": "Person Name",
           "role": "inferred role (2-4 words)",
-          "interaction": "1-2 sentences describing how the user interacts with this person — what the user asks/shares and how this person responds/contributes"
+          "interaction": "1-2 sentences describing how the analyzed person interacts with this person"
         }
       ],
       "next_up": ["actionable task 1", "actionable task 2", "actionable task 3"]
@@ -44,16 +44,15 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
   ]
 }
 
-IMPORTANT: The "members" array should list every other participant EXCEPT the selected user. Infer each person's role from context. Describe the interaction pattern from the user's perspective ("You ask him...", "She responds with...").
-
+IMPORTANT: The "members" array should list every other participant EXCEPT the analyzed person. Infer each person's role from context.
 
 IMPORTANT: The "message_counts" field will be provided as pre-calculated data. Use those exact values. Do NOT make up counts.
 
-CRITICAL: Identify ALL distinct projects or work streams the user is involved in. Each project should be a separate entry in the "projects" array. A project is a distinct topic, initiative, or workstream. If there is truly only one, return one. But if the chat covers multiple topics, return multiple projects.
+CRITICAL: Identify ALL distinct projects or work streams the person is involved in. Each project should be a separate entry in the "projects" array. A project is a distinct topic, initiative, or workstream. If there is truly only one, return one. But if the chat covers multiple topics, return multiple projects.
 
 CRITICAL: All work_style fields MUST be extremely concise — max 1 short sentence or a few comma-separated keywords. No paragraphs.
 
-CRITICAL: "overview" is 1 sentence. "left_off" is 1 sentence about the most recent thing the user did or discussed.
+CRITICAL: "overview" is 1 sentence. "left_off" is 1 sentence about the most recent thing the person did or discussed.
 
 Return ONLY valid JSON, no markdown fences.`;
 
