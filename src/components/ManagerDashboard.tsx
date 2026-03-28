@@ -3,8 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import ProjectCard from "@/components/ProjectCard";
 import type { AnalysisResult, Project, WeekLabelInfo } from "@/types/analysis";
+import { parseTeamsChat } from "@/lib/chatParser";
 
-type MemberStatus = "on track" | "blocked" | "quiet" | "in progress";
+type MemberStatus = "active" | "blocked" | "quiet";
 
 interface MemberCard {
   name: string;
@@ -17,18 +18,18 @@ interface MemberCard {
 }
 
 const STATUS_PRIORITY: Record<string, number> = {
-  "blocked": 3,
-  "quiet": 2,
-  "in progress": 1,
-  "on track": 0,
+  "blocked": 2,
+  "quiet": 1,
+  "active": 0,
 };
 
 function getWorstStatus(statuses: string[]): MemberStatus {
   if (statuses.length === 0) return "quiet";
-  let worst: MemberStatus = "on track";
+  let worst: MemberStatus = "active";
   for (const s of statuses) {
-    if ((STATUS_PRIORITY[s] ?? 0) > (STATUS_PRIORITY[worst] ?? 0)) {
-      worst = s as MemberStatus;
+    const mapped = s === "on track" || s === "in progress" ? "active" : s;
+    if ((STATUS_PRIORITY[mapped] ?? 0) > (STATUS_PRIORITY[worst] ?? 0)) {
+      worst = mapped as MemberStatus;
     }
   }
   return worst;
@@ -36,18 +37,16 @@ function getWorstStatus(statuses: string[]): MemberStatus {
 
 function getStatusDotClass(status: MemberStatus) {
   switch (status) {
-    case "on track": return "bg-[hsl(var(--status-on-track))]";
+    case "active": return "bg-[hsl(var(--status-active))]";
     case "blocked": return "bg-[hsl(var(--status-blocked))]";
-    case "in progress": return "bg-[hsl(var(--status-in-progress))]";
     case "quiet": return "bg-[hsl(var(--status-quiet))]";
   }
 }
 
 function getAvatarClass(status: MemberStatus) {
   switch (status) {
-    case "on track": return "bg-[hsl(var(--status-on-track)/0.15)] text-[hsl(var(--status-on-track))]";
+    case "active": return "bg-[hsl(var(--status-active)/0.15)] text-[hsl(var(--status-active))]";
     case "blocked": return "bg-[hsl(var(--status-blocked)/0.15)] text-[hsl(var(--status-blocked))]";
-    case "in progress": return "bg-[hsl(var(--status-in-progress)/0.15)] text-[hsl(var(--status-in-progress))]";
     case "quiet": return "bg-[hsl(var(--status-quiet)/0.15)] text-[hsl(var(--status-quiet))]";
   }
 }
@@ -63,15 +62,57 @@ function getInitials(name: string) {
 
 const statusBadgeVariant = (status: string) => {
   switch (status) {
-    case "on track": return "onTrack" as const;
+    case "active":
+    case "on track":
+    case "in progress":
+      return "active" as const;
     case "blocked": return "blocked" as const;
-    case "in progress": return "inProgress" as const;
     default: return "quiet" as const;
   }
 };
 
-function buildMemberCards(result: AnalysisResult, userName: string): MemberCard[] {
+/**
+ * Determine member status from parsed chat data:
+ * - quiet: no messages in last 3 days
+ * - blocked: recent messages mention waiting/unavailable
+ * - active: otherwise
+ */
+function computeMemberStatus(
+  memberName: string,
+  chatData: string,
+  latestTimestamp: Date
+): MemberStatus {
+  const messages = parseTeamsChat(chatData);
+  const memberMsgs = messages.filter(
+    (m) => m.sender.toLowerCase() === memberName.toLowerCase()
+  );
+
+  if (memberMsgs.length === 0) return "quiet";
+
+  const sorted = [...memberMsgs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  const lastMsg = sorted[0];
+  const threeDaysAgo = new Date(latestTimestamp.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+  if (lastMsg.timestamp < threeDaysAgo) return "quiet";
+
+  // Check recent messages for blocked signals
+  const recentMsgs = sorted.slice(0, 5);
+  const blockedPatterns = /\b(waiting|blocked|stuck|unavailable|ooo|out of office|on leave|pto|vacation)\b/i;
+  for (const msg of recentMsgs) {
+    if (blockedPatterns.test(msg.text)) return "blocked";
+  }
+
+  return "active";
+}
+
+function buildMemberCards(result: AnalysisResult, userName: string, chatData: string): MemberCard[] {
   const memberMap = new Map<string, MemberCard>();
+
+  // Find latest timestamp from all messages for relative date comparison
+  const allMessages = parseTeamsChat(chatData);
+  const latestTimestamp = allMessages.length > 0
+    ? new Date(Math.max(...allMessages.map((m) => m.timestamp.getTime())))
+    : new Date();
 
   for (const project of result.projects) {
     if (!project.members) continue;
@@ -83,22 +124,21 @@ function buildMemberCards(result: AnalysisResult, userName: string): MemberCard[
         memberMap.set(key, {
           name: member.name,
           role: member.role,
-          status: "on track",
+          status: "active",
           projects: [],
         });
       }
       const card = memberMap.get(key)!;
       card.projects.push({
         project,
-        leftOff: member.interaction,
+        leftOff: project.left_off,
       });
     }
   }
 
-  // Calculate overall status per member
+  // Compute status from actual chat activity
   for (const card of memberMap.values()) {
-    const statuses = card.projects.map((p) => p.project.status);
-    card.status = getWorstStatus(statuses);
+    card.status = computeMemberStatus(card.name, chatData, latestTimestamp);
   }
 
   return [...memberMap.values()].sort((a, b) =>
@@ -110,18 +150,19 @@ interface ManagerDashboardProps {
   result: AnalysisResult;
   userName: string;
   weekLabels?: WeekLabelInfo[];
+  chatData: string;
 }
 
-const ManagerDashboard = ({ result, userName, weekLabels }: ManagerDashboardProps) => {
+const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDashboardProps) => {
   const [selectedMember, setSelectedMember] = useState<MemberCard | null>(null);
-  const members = buildMemberCards(result, userName);
+  const members = buildMemberCards(result, userName, chatData);
 
   const currentWeek = weekLabels?.[weekLabels.length - 1]?.label ?? "This week";
 
   const statusCounts = {
-    "on track": members.filter((m) => m.status === "on track").length,
-    "blocked": members.filter((m) => m.status === "blocked").length,
-    "quiet": members.filter((m) => m.status === "quiet").length,
+    active: members.filter((m) => m.status === "active").length,
+    blocked: members.filter((m) => m.status === "blocked").length,
+    quiet: members.filter((m) => m.status === "quiet").length,
   };
 
   if (selectedMember) {
@@ -158,22 +199,22 @@ const ManagerDashboard = ({ result, userName, weekLabels }: ManagerDashboardProp
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs font-medium">
-          {statusCounts["on track"] > 0 && (
+          {statusCounts.active > 0 && (
             <span className="flex items-center gap-1.5">
-              <span className={`h-2 w-2 rounded-full ${getStatusDotClass("on track")}`} />
-              {statusCounts["on track"]} on track
+              <span className={`h-2 w-2 rounded-full ${getStatusDotClass("active")}`} />
+              {statusCounts.active} active
             </span>
           )}
-          {statusCounts["blocked"] > 0 && (
+          {statusCounts.blocked > 0 && (
             <span className="flex items-center gap-1.5">
               <span className={`h-2 w-2 rounded-full ${getStatusDotClass("blocked")}`} />
-              {statusCounts["blocked"]} blocked
+              {statusCounts.blocked} blocked
             </span>
           )}
-          {statusCounts["quiet"] > 0 && (
+          {statusCounts.quiet > 0 && (
             <span className="flex items-center gap-1.5">
               <span className={`h-2 w-2 rounded-full ${getStatusDotClass("quiet")}`} />
-              {statusCounts["quiet"]} quiet
+              {statusCounts.quiet} quiet
             </span>
           )}
         </div>
