@@ -16,7 +16,7 @@ export interface Project {
   name: string;
   overview: string;
   left_off: string;
-  status: "on track" | "blocked" | "in progress";
+  status: "active" | "blocked" | "quiet";
   weekly_summary: {
     W1: string;
     W2: string;
