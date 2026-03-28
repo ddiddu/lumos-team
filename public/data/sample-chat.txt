@@ -360,3 +360,210 @@ Priya Nair
 Thursday 9:00 AM
 
 Sarah Yoon — any update on Marcus Webb? We're going to miss the sprint deadline at this rate.
+
+---
+
+Teams
+
+Lumos - Q1 Launch
+
+Conversation
+
+Meet now
+
+Sarah Yoon
+Monday 9:00 AM
+
+Team — Q1 launch is this Friday. Sharing the final checklist. Everyone please confirm your items are done by Wednesday EOD.
+
+Q1_Launch_Checklist.docx
+
+Jisu Kim
+Monday 9:15 AM
+
+Sarah Yoon — recommendation engine v3 is confirmed ready for launch. All tests passed.
+
+1 Like reaction.
+
+Marcus Webb
+Monday 9:20 AM
+
+Sarah Yoon — frontend is good to go. Ran through the full flow this morning, no issues.
+
+1 Like reaction.
+
+Priya Nair
+Monday 9:25 AM
+
+Sarah Yoon — all design assets are exported and handed off. Ready on my end.
+
+1 Like reaction.
+
+Daniel Cho
+Monday 9:30 AM
+
+Sarah Yoon — data pipelines are ready. Dashboard will reflect launch metrics in real time.
+
+1 Like reaction.
+
+Sarah Yoon
+Monday 9:35 AM
+
+Great. We're in good shape. Let's do a final run-through Wednesday at 2pm.
+
+1 Like reaction.
+
+Jisu Kim
+Tuesday 10:00 AM
+
+Sarah Yoon, team — one thing to flag: the recommendation engine has a cold start delay of about 2 seconds for first-time users. Not a blocker but worth noting in the launch comms.
+
+Marcus Webb
+Tuesday 10:15 AM
+
+Jisu Kim — I can add a loading skeleton on the frontend so it doesn't feel slow. Takes 30 mins to implement.
+
+Jisu Kim
+Tuesday 10:20 AM
+
+Marcus Webb — yes please, that would be great.
+
+1 Like reaction.
+
+Daniel Cho
+Tuesday 11:00 AM
+
+Jisu Kim — also flagging: the analytics events for the new recommendation widget aren't firing consistently in production. Looking into it now.
+
+Sarah Yoon
+Tuesday 11:15 AM
+
+Daniel Cho — let us know as soon as you have more. We need that fixed before Friday.
+
+Daniel Cho
+Tuesday 2:00 PM
+
+Sarah Yoon, Jisu Kim — found the issue. The event listener wasn't attached correctly after the widget re-renders. Fix is deployed.
+
+Jisu Kim
+Tuesday 2:10 PM
+
+Daniel Cho — confirmed working on my end. Nice catch.
+
+1 Like reaction.
+
+Marcus Webb
+Tuesday 3:00 PM
+
+Jisu Kim — loading skeleton is live in staging. Can you check it looks right with the real data?
+
+Jisu Kim
+Tuesday 3:20 PM
+
+Marcus Webb — just checked. Looks great. Ship it.
+
+1 Like reaction.
+
+Priya Nair
+Wednesday 9:00 AM
+
+Team — sharing the final launch graphics and copy for the in-app announcement banner.
+
+Launch_Banner_Final.figma
+
+Sarah Yoon
+Wednesday 9:15 AM
+
+Priya Nair — perfect. Marcus Webb — can you implement the banner today?
+
+Marcus Webb
+Wednesday 9:20 AM
+
+Sarah Yoon — on it. Will have it in staging by noon.
+
+1 Like reaction.
+
+Marcus Webb
+Wednesday 12:00 PM
+
+Sarah Yoon, Priya Nair — banner is live in staging. Looks exactly like the design.
+
+Priya Nair
+Wednesday 12:15 PM
+
+Marcus Webb — just checked. Pixel perfect. 
+
+1 Like reaction.
+
+Sarah Yoon
+Wednesday 2:00 PM
+
+Team — run-through starting now. Everyone join the call.
+
+Daniel Cho
+Wednesday 2:01 PM
+
+On the call.
+
+Jisu Kim
+Wednesday 2:01 PM
+
+Joining now.
+
+Marcus Webb
+Wednesday 2:02 PM
+
+Here.
+
+Priya Nair
+Wednesday 2:02 PM
+
+Joining.
+
+Sarah Yoon
+Wednesday 2:45 PM
+
+Great run-through everyone. We're ready. See you all Friday for the launch.
+
+2 reactions.
+
+Jisu Kim
+Thursday 10:00 AM
+
+Sarah Yoon — one last thing. Running a final smoke test on the recommendation engine now. Will confirm by noon.
+
+Daniel Cho
+Thursday 10:15 AM
+
+Jisu Kim — I'll monitor the data pipeline in parallel and flag anything unusual.
+
+1 Like reaction.
+
+Jisu Kim
+Thursday 12:00 PM
+
+Sarah Yoon, team — smoke test passed. Recommendation engine is launch ready.
+
+Sarah Yoon
+Thursday 12:10 PM
+
+Jisu Kim — amazing. We're go for launch Friday.
+
+2 reactions.
+
+Marcus Webb
+Thursday 2:00 PM
+
+Sarah Yoon — frontend final check done. All good on my end.
+
+Priya Nair
+Thursday 2:30 PM
+
+Sarah Yoon — just did a final design QA pass. Everything looks great.
+
+Sarah Yoon
+Thursday 3:00 PM
+
+Perfect. Thank you all. Big day tomorrow.
+
+2 reactions.

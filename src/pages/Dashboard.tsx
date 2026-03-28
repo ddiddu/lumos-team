@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useLocation, Navigate } from "react-router-dom";
 import MemberProfileView from "@/components/MemberProfileView";
-import DashboardWalkthrough from "@/components/DashboardWalkthrough";
+import AppWalkthrough from "@/components/AppWalkthrough";
 import ManagerDashboard from "@/components/ManagerDashboard";
 import type { AnalysisResult } from "@/types/analysis";
 
 type Mode = "me" | "manager";
 
 const ModeToggle = ({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void }) => (
-  <div className="inline-flex rounded-lg border p-0.5">
+  <div data-tour="mode-toggle" className="inline-flex rounded-lg border p-0.5">
     <button
       onClick={() => setMode("me")}
       className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
@@ -39,7 +39,6 @@ const Dashboard = () => {
 
   if (!result) return <Navigate to="/" replace />;
 
-  // Compute overall status from projects
   const computeMyStatus = (): "active" | "blocked" | "quiet" => {
     if (!result.projects.length) return "active";
     let worst: "active" | "blocked" | "quiet" = "active";
@@ -52,7 +51,7 @@ const Dashboard = () => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {mode === "me" && <DashboardWalkthrough />}
+      <AppWalkthrough />
 
       <main className="flex-1 overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-10 pt-6 pb-0">
