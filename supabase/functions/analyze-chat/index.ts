@@ -10,11 +10,11 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
 
 {
   "work_style": {
-    "role": "the person's apparent role",
-    "style": "their communication/work style",
-    "likes": "things they seem to enjoy or prefer",
-    "dislikes": "things they seem to avoid or dislike",
-    "speech_habits": "notable speech patterns or phrases"
+    "role": "short role title (max 5 words)",
+    "style": "1 short sentence max",
+    "likes": "1 short sentence max, comma-separated keywords",
+    "dislikes": "1 short sentence max, comma-separated keywords",
+    "speech_habits": "1 short sentence max, comma-separated phrases"
   },
   "projects": [
     {

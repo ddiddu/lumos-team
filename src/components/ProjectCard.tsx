@@ -34,13 +34,13 @@ const ProjectCard = ({ project }: { project: Project }) => {
   };
 
   return (
-    <div className="rounded-lg border p-6 space-y-5">
+    <div className="rounded-lg border p-8 space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">{project.name}</h3>
         <Badge variant={statusVariant(project.status)}>{project.status}</Badge>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-8">
         {/* Weekly summary */}
         <div className="space-y-2">
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
