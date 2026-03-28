@@ -108,11 +108,14 @@ export function extractParticipants(raw: string): string[] {
   const refDate = new Date();
   const names = new Set<string>();
 
+  // A valid name: 2-4 words, each starting with uppercase, no digits, no special chars
+  const NAME_RE = /^[A-Z\u00C0-\u024F\uAC00-\uD7AF][a-z\u00C0-\u024F\uAC00-\uD7AF]*(?:\s+[A-Z\u00C0-\u024F\uAC00-\uD7AF][a-z\u00C0-\u024F\uAC00-\uD7AF]*){0,3}$/;
+
   for (let i = 0; i < lines.length - 1; i++) {
     const line = lines[i].trim();
-    if (line === "") continue;
+    if (line === "" || line.length > 40) continue;
     const nextLine = lines[i + 1].trim();
-    if (parseTimestamp(nextLine, refDate)) {
+    if (NAME_RE.test(line) && parseTimestamp(nextLine, refDate)) {
       names.add(line);
     }
   }
