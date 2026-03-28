@@ -8,10 +8,13 @@ const corsHeaders = {
 
 const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a full chat log, identify ALL distinct projects or workstreams discussed.
 
-Merge different names that refer to the same project into ONE canonical name.
-For example: "2024 inference", "2024 email data", "predictions.csv project" should all become one project like "2024 Email Inference & Classification".
+CLASSIFICATION RULES:
+1. Messages that are temporally close together (within minutes of each other) are likely part of the same conversation thread and the same project context.
+2. Use BOTH message content AND temporal proximity to determine project membership. A burst of messages between the same people about related topics = one project.
+3. Merge different names that refer to the same project into ONE canonical name. For example: "2024 inference", "2024 email data", "predictions.csv project" should all become one project like "2024 Email Inference & Classification".
+4. Short back-and-forth exchanges within a few minutes are almost always about the same project — do NOT split them.
 
-For each project, list the participants involved (by exact name as they appear in the chat).
+For each project, list ALL participants involved (by exact name as they appear in the chat) — anyone who sent messages about that project.
 
 Return ONLY valid JSON with this structure:
 {
@@ -60,7 +63,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: `Analyze this chat log and classify all projects:\n\n${chatData}${participantInfo}` },
+          { role: "user", content: `Analyze this chat log and classify all projects. Pay attention to message timestamps — messages close in time are likely about the same project:\n\n${chatData}${participantInfo}` },
         ],
       }),
     });
