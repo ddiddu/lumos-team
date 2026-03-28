@@ -76,58 +76,52 @@ const DashboardWalkthrough = () => {
   const fitsRight = tooltipLeft + 300 < window.innerWidth;
 
   return (
-    <div className="fixed inset-0 z-50">
-      {/* Dark overlay with cutout */}
-      <svg className="absolute inset-0 w-full h-full">
-        <defs>
-          <mask id="walkthrough-mask">
-            <rect width="100%" height="100%" fill="white" />
-            <rect
-              x={rect.left - pad}
-              y={rect.top - pad}
-              width={rect.width + pad * 2}
-              height={rect.height + pad * 2}
-              rx="8"
-              fill="black"
-            />
-          </mask>
-        </defs>
-        <rect
-          width="100%"
-          height="100%"
-          fill="hsl(0 0% 0% / 0.6)"
-          mask="url(#walkthrough-mask)"
+    <>
+      {/* Overlay — pointer-events: none so background scrolls freely */}
+      <div className="fixed inset-0 z-50 pointer-events-none">
+        <svg className="absolute inset-0 w-full h-full">
+          <defs>
+            <mask id="walkthrough-mask">
+              <rect width="100%" height="100%" fill="white" />
+              <rect
+                x={rect.left - pad}
+                y={rect.top - pad}
+                width={rect.width + pad * 2}
+                height={rect.height + pad * 2}
+                rx="8"
+                fill="black"
+              />
+            </mask>
+          </defs>
+          <rect
+            width="100%"
+            height="100%"
+            fill="hsl(0 0% 0% / 0.6)"
+            mask="url(#walkthrough-mask)"
+          />
+        </svg>
+
+        <div
+          className="absolute rounded-lg ring-2 ring-primary ring-offset-2 ring-offset-background transition-all duration-300"
+          style={{
+            left: rect.left - pad,
+            top: rect.top - pad,
+            width: rect.width + pad * 2,
+            height: rect.height + pad * 2,
+          }}
         />
-      </svg>
+      </div>
 
-      {/* Highlight border */}
-      <div
-        className="absolute rounded-lg ring-2 ring-primary ring-offset-2 ring-offset-background transition-all duration-300"
-        style={{
-          left: rect.left - pad,
-          top: rect.top - pad,
-          width: rect.width + pad * 2,
-          height: rect.height + pad * 2,
-        }}
-      />
-
-      {/* Tooltip */}
-      <div
-        className="absolute z-50 w-72 rounded-xl border bg-card p-5 shadow-lg animate-fade-in"
-        style={
-          fitsRight
-            ? { left: tooltipLeft, top: Math.max(16, tooltipTop - 60) }
-            : { left: rect.left, top: rect.bottom + 16 }
-        }
-      >
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">
-          Step {currentStep + 1} of {steps.length}
-        </p>
-        <h4 className="text-sm font-semibold mb-2">{step.title}</h4>
-        <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-          {step.description}
-        </p>
-        <div className="flex justify-between items-center">
+      {/* Fixed bottom bar — always visible & clickable */}
+      <div className="fixed bottom-0 left-0 right-0 z-[60] border-t bg-card p-4 flex items-center justify-between pointer-events-auto">
+        <div className="min-w-0 mr-4">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Step {currentStep + 1} of {steps.length}
+          </p>
+          <h4 className="text-sm font-semibold">{step.title}</h4>
+          <p className="text-sm text-muted-foreground">{step.description}</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-4">
           <button
             onClick={() => {
               sessionStorage.setItem(STORAGE_KEY, "true");
@@ -142,7 +136,7 @@ const DashboardWalkthrough = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
