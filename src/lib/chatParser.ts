@@ -9,6 +9,11 @@ export interface ParsedCounts {
   daily: { Mon: number; Tue: number; Wed: number; Thu: number; Fri: number };
 }
 
+export interface WeekLabel {
+  key: "W1" | "W2" | "W3" | "W4";
+  label: string; // e.g. "Mar W2"
+}
+
 const DATE_RE = /^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
 const DAY_RE = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+(\d{1,2}):(\d{2})\s*(AM|PM)$/i;
 
@@ -16,6 +21,8 @@ const DAY_MAP: Record<string, number> = {
   sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
   thursday: 4, friday: 5, saturday: 6,
 };
+
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function parseTimestamp(raw: string, refDate: Date): Date | null {
   const dateMatch = raw.match(DATE_RE);
@@ -65,7 +72,6 @@ export function parseTeamsChat(raw: string): ParsedMessage[] {
 
   let i = 0;
   while (i < lines.length) {
-    // Skip blank lines
     if (lines[i].trim() === "") { i++; continue; }
 
     const sender = lines[i].trim();
@@ -75,11 +81,9 @@ export function parseTeamsChat(raw: string): ParsedMessage[] {
     const ts = parseTimestamp(tsLine, refDate);
 
     if (ts) {
-      // Collect message text (everything until next blank line or next sender block)
       let text = "";
       let j = i + 2;
       while (j < lines.length && lines[j].trim() !== "") {
-        // Check if this line + next line form a new sender+timestamp pair
         if (j + 1 < lines.length && parseTimestamp(lines[j + 1].trim(), refDate)) {
           break;
         }
@@ -97,6 +101,69 @@ export function parseTeamsChat(raw: string): ParsedMessage[] {
 }
 
 /**
+ * Extract unique participant names — only from lines immediately followed by a valid timestamp.
+ */
+export function extractParticipants(raw: string): string[] {
+  const lines = raw.split("\n");
+  const refDate = new Date();
+  const names = new Set<string>();
+
+  for (let i = 0; i < lines.length - 1; i++) {
+    const line = lines[i].trim();
+    if (line === "") continue;
+    const nextLine = lines[i + 1].trim();
+    if (parseTimestamp(nextLine, refDate)) {
+      names.add(line);
+    }
+  }
+
+  return [...names];
+}
+
+/**
+ * Calculate real week labels from message timestamps.
+ * Returns labels like "Mar W2", "Mar W3", etc.
+ */
+export function getWeekLabels(messages: ParsedMessage[]): WeekLabel[] {
+  if (messages.length === 0) {
+    return [
+      { key: "W1", label: "W1" },
+      { key: "W2", label: "W2" },
+      { key: "W3", label: "W3" },
+      { key: "W4", label: "W4" },
+    ];
+  }
+
+  const sorted = [...messages].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  const latest = sorted[sorted.length - 1].timestamp;
+
+  const latestDay = latest.getDay();
+  const mondayOffset = latestDay === 0 ? 6 : latestDay - 1;
+  const w4Monday = new Date(latest);
+  w4Monday.setDate(latest.getDate() - mondayOffset);
+  w4Monday.setHours(0, 0, 0, 0);
+
+  const weekStarts = [
+    new Date(w4Monday.getTime() - 21 * 86400000),
+    new Date(w4Monday.getTime() - 14 * 86400000),
+    new Date(w4Monday.getTime() - 7 * 86400000),
+    w4Monday,
+  ];
+
+  const keys: ("W1" | "W2" | "W3" | "W4")[] = ["W1", "W2", "W3", "W4"];
+
+  return weekStarts.map((start, i) => {
+    const month = MONTH_NAMES[start.getMonth()];
+    // Week of month (1-based)
+    const weekOfMonth = Math.ceil(start.getDate() / 7);
+    return {
+      key: keys[i],
+      label: `${month} W${weekOfMonth}`,
+    };
+  });
+}
+
+/**
  * Count messages from a specific user grouped by week and daily for most recent week.
  */
 export function countMessages(messages: ParsedMessage[], userName: string): ParsedCounts {
@@ -111,36 +178,31 @@ export function countMessages(messages: ParsedMessage[], userName: string): Pars
     };
   }
 
-  // Use real calendar weeks (Mon-Sun) based on the most recent message
   const sorted = [...userMessages].sort(
     (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
   );
 
   const latest = sorted[sorted.length - 1].timestamp;
 
-  // Find the Monday of the latest message's week = W4 start
-  const latestDay = latest.getDay(); // 0=Sun
+  const latestDay = latest.getDay();
   const mondayOffset = latestDay === 0 ? 6 : latestDay - 1;
   const w4Monday = new Date(latest);
   w4Monday.setDate(latest.getDate() - mondayOffset);
   w4Monday.setHours(0, 0, 0, 0);
 
-  // Week boundaries: W4=latest week, W3=week before, etc.
   const weekStarts = [
-    new Date(w4Monday.getTime() - 21 * 86400000), // W1 start
-    new Date(w4Monday.getTime() - 14 * 86400000), // W2 start
-    new Date(w4Monday.getTime() - 7 * 86400000),  // W3 start
-    w4Monday,                                       // W4 start
+    new Date(w4Monday.getTime() - 21 * 86400000),
+    new Date(w4Monday.getTime() - 14 * 86400000),
+    new Date(w4Monday.getTime() - 7 * 86400000),
+    w4Monday,
   ];
 
   const weekly = { W1: 0, W2: 0, W3: 0, W4: 0 };
-  const weekKeys = ["W1", "W2", "W3", "W4"] as const;
   const daily = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 };
   const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   for (const msg of sorted) {
     const t = msg.timestamp.getTime();
-    // Assign to week bucket
     if (t >= weekStarts[3].getTime()) {
       weekly.W4++;
       const dayName = dayMap[msg.timestamp.getDay()];
@@ -154,7 +216,6 @@ export function countMessages(messages: ParsedMessage[], userName: string): Pars
     } else if (t >= weekStarts[0].getTime()) {
       weekly.W1++;
     }
-    // Messages older than 4 weeks are ignored
   }
 
   return { weekly, daily };

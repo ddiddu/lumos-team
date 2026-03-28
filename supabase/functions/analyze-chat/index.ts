@@ -10,39 +10,40 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
 
 {
   "work_style": {
-    "role": "short role title (max 5 words)",
-    "style": "1 short sentence max",
-    "likes": "1 short sentence max, comma-separated keywords",
-    "dislikes": "1 short sentence max, comma-separated keywords",
-    "speech_habits": "1 short sentence max, comma-separated phrases"
+    "role": "short role title, max 5 words",
+    "style": "max 1 short sentence",
+    "likes": "comma-separated keywords, max 8 words total",
+    "dislikes": "comma-separated keywords, max 8 words total",
+    "speech_habits": "comma-separated short phrases, max 8 words total"
   },
   "projects": [
     {
-      "name": "project name",
+      "name": "high-level project name (not too specific)",
+      "overview": "one sentence describing what this project is about",
+      "left_off": "one sentence about the most recent activity",
       "status": "on track" or "blocked" or "in progress",
       "weekly_summary": {
-        "W1": "one line summary of week 1 activity",
-        "W2": "one line summary of week 2 activity",
-        "W3": "one line summary of week 3 activity",
-        "W4": "one line summary of week 4 activity"
+        "W1": "one line summary",
+        "W2": "one line summary",
+        "W3": "one line summary",
+        "W4": "one line summary"
       },
       "message_counts": {
         "W1": 0, "W2": 0, "W3": 0, "W4": 0,
         "W4_daily": {"Mon": 0, "Tue": 0, "Wed": 0, "Thu": 0, "Fri": 0}
       },
-      "next_up": ["task 1", "task 2", "task 3"]
+      "next_up": ["actionable task 1", "actionable task 2", "actionable task 3"]
     }
   ]
 }
 
-IMPORTANT: The "message_counts" field will be provided to you as pre-calculated data from real timestamp parsing. You MUST use the provided message counts exactly as given. Include the W4_daily breakdown. Use the total counts directly for the single project.
+IMPORTANT: The "message_counts" field will be provided as pre-calculated data. Use those exact values. Do NOT make up counts.
 
-CRITICAL: Return exactly ONE project that summarizes ALL the work discussed in the chat. Do NOT split into multiple projects. Combine all topics into a single holistic project entry.
+CRITICAL: Return exactly ONE project that summarizes ALL the work discussed. Do NOT split into multiple projects.
 
-Focus your analysis on:
-1. Identifying the user's work style from their messages (the user whose name is provided)
-2. Writing accurate weekly summaries covering all work
-3. Suggesting actionable next steps
+CRITICAL: All work_style fields MUST be extremely concise — max 1 short sentence or a few comma-separated keywords. No paragraphs.
+
+CRITICAL: "overview" is 1 sentence. "left_off" is 1 sentence about the most recent thing the user did or discussed.
 
 Return ONLY valid JSON, no markdown fences.`;
 
@@ -52,7 +53,7 @@ serve(async (req) => {
   }
 
   try {
-    const { chatData, userName, messageCounts } = await req.json();
+    const { chatData, userName, messageCounts, weekLabels } = await req.json();
     if (!chatData || typeof chatData !== "string" || chatData.trim().length === 0) {
       return new Response(JSON.stringify({ error: "chatData is required" }), {
         status: 400,
@@ -65,9 +66,15 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const countsInfo = messageCounts
-      ? `\n\nPre-calculated message counts for user "${userName}":\nWeekly: W1=${messageCounts.weekly?.W1 || 0}, W2=${messageCounts.weekly?.W2 || 0}, W3=${messageCounts.weekly?.W3 || 0}, W4=${messageCounts.weekly?.W4 || 0}\nW4 daily: Mon=${messageCounts.daily?.Mon || 0}, Tue=${messageCounts.daily?.Tue || 0}, Wed=${messageCounts.daily?.Wed || 0}, Thu=${messageCounts.daily?.Thu || 0}, Fri=${messageCounts.daily?.Fri || 0}\n\nDistribute these counts proportionally across the projects you identify.`
-      : "";
+    let countsInfo = "";
+    if (messageCounts) {
+      countsInfo = `\n\nPre-calculated message counts for user "${userName}":\nWeekly: W1=${messageCounts.weekly?.W1 || 0}, W2=${messageCounts.weekly?.W2 || 0}, W3=${messageCounts.weekly?.W3 || 0}, W4=${messageCounts.weekly?.W4 || 0}\nW4 daily: Mon=${messageCounts.daily?.Mon || 0}, Tue=${messageCounts.daily?.Tue || 0}, Wed=${messageCounts.daily?.Wed || 0}, Thu=${messageCounts.daily?.Thu || 0}, Fri=${messageCounts.daily?.Fri || 0}\n\nUse these counts EXACTLY as given.`;
+    }
+
+    let weekLabelInfo = "";
+    if (weekLabels && Array.isArray(weekLabels)) {
+      weekLabelInfo = `\n\nWeek labels: ${weekLabels.map((w: any) => `${w.key}=${w.label}`).join(", ")}. Use these as context for your weekly summaries.`;
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -79,7 +86,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: `User name: ${userName || "Unknown"}\n\nAnalyze this chat log:\n\n${chatData}${countsInfo}` },
+          { role: "user", content: `User name: ${userName || "Unknown"}\n\nAnalyze this chat log:\n\n${chatData}${countsInfo}${weekLabelInfo}` },
         ],
       }),
     });

@@ -8,6 +8,8 @@ export interface WorkStyle {
 
 export interface Project {
   name: string;
+  overview: string;
+  left_off: string;
   status: "on track" | "blocked" | "in progress";
   weekly_summary: {
     W1: string;
@@ -31,7 +33,13 @@ export interface Project {
   next_up: string[];
 }
 
+export interface WeekLabelInfo {
+  key: "W1" | "W2" | "W3" | "W4";
+  label: string;
+}
+
 export interface AnalysisResult {
   work_style: WorkStyle;
   projects: Project[];
+  weekLabels?: WeekLabelInfo[];
 }
