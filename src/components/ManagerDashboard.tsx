@@ -1,39 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, ArrowLeft } from "lucide-react";
-import ProjectCard from "@/components/ProjectCard";
-import type { AnalysisResult, Project, WeekLabelInfo } from "@/types/analysis";
-import { parseTeamsChat } from "@/lib/chatParser";
+import type { AnalysisResult, WeekLabelInfo } from "@/types/analysis";
+import { parseTeamsChat, extractParticipants } from "@/lib/chatParser";
+import { supabase } from "@/integrations/supabase/client";
+import ManagerWalkthrough from "@/components/ManagerWalkthrough";
 
 type MemberStatus = "active" | "blocked" | "quiet";
 
-interface MemberCard {
+interface MemberProject {
+  name: string;
+  status: MemberStatus;
+  left_off: string;
+}
+
+interface MemberCardData {
   name: string;
   role: string;
   status: MemberStatus;
-  projects: {
-    project: Project;
-    leftOff: string;
-  }[];
+  projects: MemberProject[];
 }
 
 const STATUS_PRIORITY: Record<string, number> = {
-  "blocked": 2,
-  "quiet": 1,
-  "active": 0,
+  blocked: 2,
+  quiet: 1,
+  active: 0,
 };
-
-function getWorstStatus(statuses: string[]): MemberStatus {
-  if (statuses.length === 0) return "quiet";
-  let worst: MemberStatus = "active";
-  for (const s of statuses) {
-    const mapped = s === "on track" || s === "in progress" ? "active" : s;
-    if ((STATUS_PRIORITY[mapped] ?? 0) > (STATUS_PRIORITY[worst] ?? 0)) {
-      worst = mapped as MemberStatus;
-    }
-  }
-  return worst;
-}
 
 function getStatusDotClass(status: MemberStatus) {
   switch (status) {
@@ -62,28 +54,32 @@ function getInitials(name: string) {
 
 const statusBadgeVariant = (status: string) => {
   switch (status) {
-    case "active":
-    case "on track":
-    case "in progress":
-      return "active" as const;
+    case "active": return "active" as const;
     case "blocked": return "blocked" as const;
     default: return "quiet" as const;
   }
 };
 
+function getWorstStatus(projects: MemberProject[]): MemberStatus {
+  if (projects.length === 0) return "quiet";
+  let worst: MemberStatus = "active";
+  for (const p of projects) {
+    if ((STATUS_PRIORITY[p.status] ?? 0) > (STATUS_PRIORITY[worst] ?? 0)) {
+      worst = p.status;
+    }
+  }
+  return worst;
+}
+
 /**
- * Determine member status from parsed chat data:
- * - quiet: no messages in last 3 days
- * - blocked: recent messages mention waiting/unavailable
- * - active: otherwise
+ * Compute member status from chat messages (fallback/override)
  */
-function computeMemberStatus(
+function computeStatusFromChat(
   memberName: string,
-  chatData: string,
+  allMessages: ReturnType<typeof parseTeamsChat>,
   latestTimestamp: Date
 ): MemberStatus {
-  const messages = parseTeamsChat(chatData);
-  const memberMsgs = messages.filter(
+  const memberMsgs = allMessages.filter(
     (m) => m.sender.toLowerCase() === memberName.toLowerCase()
   );
 
@@ -95,7 +91,6 @@ function computeMemberStatus(
 
   if (lastMsg.timestamp < threeDaysAgo) return "quiet";
 
-  // Check recent messages for blocked signals
   const recentMsgs = sorted.slice(0, 5);
   const blockedPatterns = /\b(waiting|blocked|stuck|unavailable|ooo|out of office|on leave|pto|vacation)\b/i;
   for (const msg of recentMsgs) {
@@ -103,47 +98,6 @@ function computeMemberStatus(
   }
 
   return "active";
-}
-
-function buildMemberCards(result: AnalysisResult, userName: string, chatData: string): MemberCard[] {
-  const memberMap = new Map<string, MemberCard>();
-
-  // Find latest timestamp from all messages for relative date comparison
-  const allMessages = parseTeamsChat(chatData);
-  const latestTimestamp = allMessages.length > 0
-    ? new Date(Math.max(...allMessages.map((m) => m.timestamp.getTime())))
-    : new Date();
-
-  for (const project of result.projects) {
-    if (!project.members) continue;
-    for (const member of project.members) {
-      const key = member.name.toLowerCase();
-      if (key === userName.toLowerCase()) continue;
-
-      if (!memberMap.has(key)) {
-        memberMap.set(key, {
-          name: member.name,
-          role: member.role,
-          status: "active",
-          projects: [],
-        });
-      }
-      const card = memberMap.get(key)!;
-      card.projects.push({
-        project,
-        leftOff: project.left_off,
-      });
-    }
-  }
-
-  // Compute status from actual chat activity
-  for (const card of memberMap.values()) {
-    card.status = computeMemberStatus(card.name, chatData, latestTimestamp);
-  }
-
-  return [...memberMap.values()].sort((a, b) =>
-    (STATUS_PRIORITY[b.status] ?? 0) - (STATUS_PRIORITY[a.status] ?? 0)
-  );
 }
 
 interface ManagerDashboardProps {
@@ -154,16 +108,106 @@ interface ManagerDashboardProps {
 }
 
 const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDashboardProps) => {
-  const [selectedMember, setSelectedMember] = useState<MemberCard | null>(null);
-  const members = buildMemberCards(result, userName, chatData);
+  const [members, setMembers] = useState<MemberCardData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedMember, setSelectedMember] = useState<MemberCardData | null>(null);
 
   const currentWeek = weekLabels?.[weekLabels.length - 1]?.label ?? "This week";
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function analyzeTeam() {
+      setLoading(true);
+
+      const participantNames = extractParticipants(chatData);
+      const otherMembers = participantNames.filter(
+        (n) => n.toLowerCase() !== userName.toLowerCase()
+      );
+
+      if (otherMembers.length === 0) {
+        setMembers([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.functions.invoke("analyze-team", {
+          body: { chatData, userName, memberNames: participantNames },
+        });
+
+        if (cancelled) return;
+        if (error) throw error;
+
+        const aiMembers = data?.members || [];
+
+        // Parse chat for status computation
+        const allMessages = parseTeamsChat(chatData);
+        const latestTimestamp = allMessages.length > 0
+          ? new Date(Math.max(...allMessages.map((m) => m.timestamp.getTime())))
+          : new Date();
+
+        const cards: MemberCardData[] = aiMembers.map((m: any) => {
+          const projects: MemberProject[] = (m.projects || []).map((p: any) => ({
+            name: p.name || "Unknown",
+            status: (["active", "blocked", "quiet"].includes(p.status) ? p.status : "active") as MemberStatus,
+            left_off: p.left_off || "",
+          }));
+
+          // Override overall status with chat-based computation (more accurate)
+          const chatStatus = computeStatusFromChat(m.name, allMessages, latestTimestamp);
+
+          return {
+            name: m.name,
+            role: m.role || "Team member",
+            status: chatStatus,
+            projects,
+          };
+        });
+
+        // Sort: blocked first, then quiet, then active
+        cards.sort((a, b) => (STATUS_PRIORITY[b.status] ?? 0) - (STATUS_PRIORITY[a.status] ?? 0));
+
+        setMembers(cards);
+      } catch (e) {
+        console.error("Team analysis failed:", e);
+        // Fallback: build basic cards from participant list
+        const allMessages = parseTeamsChat(chatData);
+        const latestTimestamp = allMessages.length > 0
+          ? new Date(Math.max(...allMessages.map((m) => m.timestamp.getTime())))
+          : new Date();
+
+        const fallbackCards: MemberCardData[] = otherMembers.map((name) => ({
+          name,
+          role: "Team member",
+          status: computeStatusFromChat(name, allMessages, latestTimestamp),
+          projects: [],
+        }));
+        fallbackCards.sort((a, b) => (STATUS_PRIORITY[b.status] ?? 0) - (STATUS_PRIORITY[a.status] ?? 0));
+        setMembers(fallbackCards);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    analyzeTeam();
+    return () => { cancelled = true; };
+  }, [chatData, userName]);
 
   const statusCounts = {
     active: members.filter((m) => m.status === "active").length,
     blocked: members.filter((m) => m.status === "blocked").length,
     quiet: members.filter((m) => m.status === "quiet").length,
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4 p-10">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
+        <p className="text-muted-foreground">Analyzing team members...</p>
+      </div>
+    );
+  }
 
   if (selectedMember) {
     return (
@@ -175,14 +219,32 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
           <ArrowLeft className="h-4 w-4" />
           Back to team
         </button>
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold">{selectedMember.name}</h2>
-          <p className="text-sm text-muted-foreground">{selectedMember.role}</p>
+        <div className="mb-6 flex items-center gap-3">
+          <div className={`h-12 w-12 rounded-full flex items-center justify-center text-base font-semibold ${getAvatarClass(selectedMember.status)}`}>
+            {getInitials(selectedMember.name)}
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">{selectedMember.name}</h2>
+            <p className="text-sm text-muted-foreground">{selectedMember.role}</p>
+          </div>
+          <span className={`h-2.5 w-2.5 rounded-full ${getStatusDotClass(selectedMember.status)}`} />
         </div>
-        <div className="space-y-6">
+        <div className="space-y-4">
           {selectedMember.projects.map((p, i) => (
-            <ProjectCard key={i} project={p.project} weekLabels={weekLabels} />
+            <div key={i} className="rounded-lg border p-6 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">{p.name}</h3>
+                <Badge variant={statusBadgeVariant(p.status)}>{p.status}</Badge>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Where they left off</p>
+                <p className="text-sm">{p.left_off}</p>
+              </div>
+            </div>
           ))}
+          {selectedMember.projects.length === 0 && (
+            <p className="text-sm text-muted-foreground">No project activity found for this member.</p>
+          )}
         </div>
       </div>
     );
@@ -190,8 +252,10 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
 
   return (
     <div className="p-10 overflow-y-auto h-full">
+      <ManagerWalkthrough />
+
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div data-tour-manager="header" className="mb-8 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold">Team overview</h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -225,6 +289,7 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
         {members.map((member) => (
           <div
             key={member.name}
+            data-tour-manager="member-card"
             className="rounded-lg border p-5 flex flex-col justify-between space-y-4"
           >
             {/* Top row */}
@@ -237,7 +302,10 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-sm truncate">{member.name}</p>
-                  <span className={`h-2 w-2 rounded-full shrink-0 ${getStatusDotClass(member.status)}`} />
+                  <span
+                    data-tour-manager="status-badge"
+                    className={`h-2 w-2 rounded-full shrink-0 ${getStatusDotClass(member.status)}`}
+                  />
                 </div>
                 <p className="text-xs text-muted-foreground truncate">{member.role}</p>
               </div>
@@ -248,18 +316,22 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
               {member.projects.map((p, i) => (
                 <div key={i} className="space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium truncate">{p.project.name}</p>
-                    <Badge variant={statusBadgeVariant(p.project.status)} className="text-[10px] shrink-0">
-                      {p.project.status}
+                    <p className="text-sm font-medium truncate">{p.name}</p>
+                    <Badge variant={statusBadgeVariant(p.status)} className="text-[10px] shrink-0">
+                      {p.status}
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">{p.leftOff}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{p.left_off}</p>
                 </div>
               ))}
+              {member.projects.length === 0 && (
+                <p className="text-xs text-muted-foreground italic">No recent activity</p>
+              )}
             </div>
 
             {/* See details */}
             <button
+              data-tour-manager="see-details"
               onClick={() => setSelectedMember(member)}
               className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors pt-1"
             >
