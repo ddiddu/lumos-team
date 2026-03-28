@@ -35,7 +35,7 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
   ]
 }
 
-IMPORTANT: The "message_counts" field will be provided to you as pre-calculated data from real timestamp parsing. You MUST use the provided message counts exactly as given for each project. Distribute the total counts across projects proportionally based on how many messages relate to each project.
+IMPORTANT: The "message_counts" field will be provided to you as pre-calculated data from real timestamp parsing. You MUST use the provided message counts exactly as given for each project. Include the W4_daily breakdown in each project. Distribute the total counts across projects proportionally based on how many messages relate to each project.
 
 Focus your analysis on:
 1. Identifying the user's work style from their messages (the user whose name is provided)
