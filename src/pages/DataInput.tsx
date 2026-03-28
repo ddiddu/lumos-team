@@ -333,12 +333,30 @@ const DataInput = () => {
           }`}
         >
           <div className="space-y-4 pt-2">
-            <Textarea
-              placeholder="Paste your Teams or Slack chat here..."
-              className="min-h-[260px] resize-none font-mono text-sm"
-              value={chatData}
-              onChange={(e) => setChatData(e.target.value)}
-            />
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await fetch("/data/sample-chat.txt");
+                  const text = await res.text();
+                  setChatData(text);
+                } catch {
+                  toast.error("Failed to load sample data.");
+                }
+              }}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+            >
+              Try with sample data →
+            </button>
+
+            <div className="px-px">
+              <Textarea
+                placeholder="Paste your Teams or Slack chat here..."
+                className="min-h-[260px] resize-none font-mono text-sm"
+                value={chatData}
+                onChange={(e) => setChatData(e.target.value)}
+              />
+            </div>
 
             <div className="flex justify-end">
               <Button onClick={extractAndShowParticipants} disabled={!chatData.trim()}>
