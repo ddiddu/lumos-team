@@ -21,7 +21,7 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
       "name": "high-level project name (not too specific)",
       "overview": "one sentence describing what this project is about",
       "left_off": "one sentence about the most recent activity",
-      "status": "on track" or "blocked" or "in progress",
+      "status": "active" or "blocked" or "quiet",
       "weekly_summary": {
         "W1": "one line summary",
         "W2": "one line summary",

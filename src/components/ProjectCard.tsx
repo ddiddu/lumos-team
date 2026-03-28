@@ -6,9 +6,9 @@ import type { Project, WeekLabelInfo } from "@/types/analysis";
 
 const statusVariant = (status: Project["status"]) => {
   switch (status) {
-    case "on track": return "onTrack" as const;
+    case "active": return "active" as const;
     case "blocked": return "blocked" as const;
-    case "in progress": return "inProgress" as const;
+    case "quiet": return "quiet" as const;
   }
 };
 

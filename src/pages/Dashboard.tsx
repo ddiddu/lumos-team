@@ -11,9 +11,10 @@ type Mode = "me" | "manager";
 
 const Dashboard = () => {
   const location = useLocation();
-  const state = location.state as { result?: AnalysisResult; userName?: string } | undefined;
+  const state = location.state as { result?: AnalysisResult; userName?: string; chatData?: string } | undefined;
   const result = state?.result;
   const userName = state?.userName ?? "Unknown";
+  const chatData = state?.chatData ?? "";
   const [mode, setMode] = useState<Mode>("me");
 
   if (!result) return <Navigate to="/" replace />;
@@ -71,7 +72,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
-            <ManagerDashboard result={result} userName={userName} weekLabels={result.weekLabels} />
+            <ManagerDashboard result={result} userName={userName} weekLabels={result.weekLabels} chatData={chatData} />
           </div>
         </main>
       )}

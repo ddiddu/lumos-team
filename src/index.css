@@ -53,9 +53,8 @@ All colors MUST be HSL.
     --sidebar-border: 0 0% 90%;
     --sidebar-ring: 0 0% 9%;
 
-    --status-on-track: 142 71% 45%;
+    --status-active: 142 71% 45%;
     --status-blocked: 38 92% 50%;
-    --status-in-progress: 217 91% 60%;
     --status-quiet: 0 0% 64%;
   }
 }
