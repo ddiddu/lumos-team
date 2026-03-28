@@ -36,6 +36,7 @@ const Dashboard = () => {
   const userName = state?.userName ?? "Unknown";
   const chatData = state?.chatData ?? "";
   const managerResults = state?.managerResults;
+  const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>(state?.initialMode === "manager" ? "manager" : "me");
 
   if (!result) return <Navigate to="/" replace />;
