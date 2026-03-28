@@ -28,10 +28,10 @@ const Landing = () => {
         </button>
 
         <button
-          disabled
-          className="flex h-36 w-36 flex-col items-center justify-center gap-3 rounded-xl border-2 border-border bg-card opacity-40 cursor-not-allowed"
+          onClick={() => navigate("/input", { state: { mode: "manager" } })}
+          className="group flex h-36 w-36 flex-col items-center justify-center gap-3 rounded-xl border-2 border-border bg-card transition-all duration-200 hover:border-primary hover:shadow-md"
         >
-          <Users className="h-8 w-8 text-muted-foreground" />
+          <Users className="h-8 w-8 text-muted-foreground transition-colors group-hover:text-primary" />
           <span className="text-sm font-medium">Manager</span>
           <span className="text-[11px] text-muted-foreground text-center leading-tight px-2">
             See where your team stands
