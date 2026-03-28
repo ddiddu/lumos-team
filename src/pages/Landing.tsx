@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { User, Users, MessageSquare, Hash } from "lucide-react";
+import { User, Users } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -35,30 +35,6 @@ const Landing = () => {
           <span className="text-sm font-medium">Manager</span>
           <span className="text-[11px] text-muted-foreground text-center leading-tight px-2">
             See where your team stands
-          </span>
-        </button>
-      </div>
-
-      <div className="flex gap-6">
-        <button
-          disabled
-          className="flex h-36 w-36 flex-col items-center justify-center gap-3 rounded-xl border-2 border-border bg-card opacity-40 cursor-not-allowed"
-        >
-          <MessageSquare className="h-8 w-8 text-muted-foreground" />
-          <span className="text-sm font-medium">Teams</span>
-          <span className="text-[11px] text-muted-foreground text-center leading-tight px-2">
-            $199 / team
-          </span>
-        </button>
-
-        <button
-          disabled
-          className="flex h-36 w-36 flex-col items-center justify-center gap-3 rounded-xl border-2 border-border bg-card opacity-40 cursor-not-allowed"
-        >
-          <Hash className="h-8 w-8 text-muted-foreground" />
-          <span className="text-sm font-medium">Slack</span>
-          <span className="text-[11px] text-muted-foreground text-center leading-tight px-2">
-            $199 / team
           </span>
         </button>
       </div>
