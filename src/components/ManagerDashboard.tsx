@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import type { AnalysisResult, WeekLabelInfo } from "@/types/analysis";
 import { parseTeamsChat, extractParticipants } from "@/lib/chatParser";
-import ManagerWalkthrough from "@/components/ManagerWalkthrough";
+
 import MemberProfileView from "@/components/MemberProfileView";
 
 type MemberStatus = "active" | "blocked" | "quiet";
@@ -173,7 +173,8 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
     const memberResult = selectedMember.analysisResult;
     return (
       <div className="p-10 overflow-y-auto h-full">
-        <button
+      <button
+          data-tour="back-to-team"
           onClick={() => setSelectedMember(null)}
           className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
         >
@@ -195,14 +196,12 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
 
   return (
     <div className="p-10 overflow-y-auto h-full">
-      <ManagerWalkthrough />
-
-      <div data-tour-manager="header" className="mb-8">
+      <div data-tour="team-overview" className="mb-8">
         <h2 className="text-xl font-semibold">Team overview</h2>
         <p className="text-sm text-muted-foreground mt-1">
           {members.length} members · {dateRange}
         </p>
-        <div className="flex items-center gap-2 mt-3" data-tour-manager="status-badge">
+        <div className="flex items-center gap-2 mt-3" data-tour="filter-pills">
           {(["blocked", "quiet", "active"] as MemberStatus[]).map((status) => {
             const count = statusCounts[status];
             if (count === 0) return null;

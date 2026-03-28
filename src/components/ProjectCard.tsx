@@ -64,7 +64,7 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
 
       {/* Where I left off */}
       {project.left_off && (
-        <div>
+        <div data-tour="left-off">
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Where I left off</p>
           <p className="text-sm">{project.left_off}</p>
         </div>
