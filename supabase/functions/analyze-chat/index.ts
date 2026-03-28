@@ -62,7 +62,7 @@ serve(async (req) => {
   }
 
   try {
-    const { chatData, userName, messageCounts, weekLabels, participantNames } = await req.json();
+    const { chatData, userName, messageCounts, weekLabels, participantNames, perspective, canonicalProjects } = await req.json();
     if (!chatData || typeof chatData !== "string" || chatData.trim().length === 0) {
       return new Response(JSON.stringify({ error: "chatData is required" }), {
         status: 400,
@@ -75,9 +75,28 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Perspective: "second" (default, Me mode) or "third" (Manager mode)
+    const useThirdPerson = perspective === "third";
+    let perspectiveInfo = "";
+    if (useThirdPerson) {
+      perspectiveInfo = `\n\nCRITICAL: Write ALL text in third person using "${userName}"'s name. Examples:
+- "${userName} worked on..." NOT "You worked on..."
+- "${userName}'s main focus was..." NOT "Your main focus was..."
+- "${userName} is waiting for..." NOT "You are waiting for..."
+- "Ask ${userName} about..." NOT "Ask about..."
+This applies to ALL fields: overview, left_off, weekly_summary, next_up, interaction, style, etc.`;
+    } else {
+      perspectiveInfo = `\n\nWrite all text in second person ("you", "your").`;
+    }
+
+    let canonicalProjectInfo = "";
+    if (canonicalProjects && Array.isArray(canonicalProjects) && canonicalProjects.length > 0) {
+      canonicalProjectInfo = `\n\nIMPORTANT: Use ONLY these canonical project names (do NOT invent new names):\n${canonicalProjects.map((p: any) => `- "${p.canonical_name}" (also known as: ${p.aliases?.join(", ") || "no aliases"})`).join("\n")}\nOnly include projects that "${userName}" is actually involved in based on the chat data.`;
+    }
+
     let countsInfo = "";
     if (messageCounts) {
-      countsInfo = `\n\nPre-calculated message counts for user "${userName}":\nWeekly: W1=${messageCounts.weekly?.W1 || 0}, W2=${messageCounts.weekly?.W2 || 0}, W3=${messageCounts.weekly?.W3 || 0}, W4=${messageCounts.weekly?.W4 || 0}\nW4 daily: Mon=${messageCounts.daily?.Mon || 0}, Tue=${messageCounts.daily?.Tue || 0}, Wed=${messageCounts.daily?.Wed || 0}, Thu=${messageCounts.daily?.Thu || 0}, Fri=${messageCounts.daily?.Fri || 0}\n\nUse these counts EXACTLY as given.`;
+      countsInfo = `\n\nPre-calculated message counts for "${userName}":\nWeekly: W1=${messageCounts.weekly?.W1 || 0}, W2=${messageCounts.weekly?.W2 || 0}, W3=${messageCounts.weekly?.W3 || 0}, W4=${messageCounts.weekly?.W4 || 0}\nW4 daily: Mon=${messageCounts.daily?.Mon || 0}, Tue=${messageCounts.daily?.Tue || 0}, Wed=${messageCounts.daily?.Wed || 0}, Thu=${messageCounts.daily?.Thu || 0}, Fri=${messageCounts.daily?.Fri || 0}\n\nUse these counts EXACTLY as given.`;
     }
 
     let weekLabelInfo = "";
@@ -100,7 +119,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: `User name: ${userName || "Unknown"}\n\nAnalyze this chat log:\n\n${chatData}${countsInfo}${weekLabelInfo}${participantInfo}` },
+          { role: "user", content: `Person being analyzed: ${userName || "Unknown"}\n\nAnalyze this chat log:\n\n${chatData}${countsInfo}${weekLabelInfo}${participantInfo}${perspectiveInfo}${canonicalProjectInfo}` },
         ],
       }),
     });
