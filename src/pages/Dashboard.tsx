@@ -12,16 +12,16 @@ const Dashboard = () => {
   if (!result) return <Navigate to="/" replace />;
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       <DashboardWalkthrough />
 
       {/* Sidebar */}
-      <aside data-tour="work-style" className="w-[260px] shrink-0 border-r p-8">
+      <aside data-tour="work-style" className="w-[260px] shrink-0 border-r p-8 overflow-y-auto">
         <WorkStyleCard workStyle={result.work_style} />
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 p-10">
+      {/* Main — scrollable */}
+      <main className="flex-1 overflow-y-auto p-10">
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-xl font-semibold">Projects</h2>
           <div className="flex gap-2">
