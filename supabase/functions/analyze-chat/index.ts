@@ -86,6 +86,11 @@ serve(async (req) => {
       weekLabelInfo = `\n\nWeek labels: ${weekLabels.map((w: any) => `${w.key}=${w.label}`).join(", ")}. Use these as context for your weekly summaries.`;
     }
 
+    let participantInfo = "";
+    if (participantNames && Array.isArray(participantNames) && participantNames.length > 0) {
+      participantInfo = `\n\nIMPORTANT: The other participants (besides "${userName}") are EXACTLY: ${participantNames.join(", ")}. Use these EXACT names for the "members" array. Do NOT invent or modify names.`;
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -96,7 +101,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: `User name: ${userName || "Unknown"}\n\nAnalyze this chat log:\n\n${chatData}${countsInfo}${weekLabelInfo}` },
+          { role: "user", content: `User name: ${userName || "Unknown"}\n\nAnalyze this chat log:\n\n${chatData}${countsInfo}${weekLabelInfo}${participantInfo}` },
         ],
       }),
     });
