@@ -14,19 +14,14 @@ const statusBadgeVariant = (status: string) => {
 
 function getAvatarClass(status: MemberStatus) {
   switch (status) {
-    case "active": return "bg-[hsl(var(--status-active)/0.15)] text-[hsl(var(--status-active))]";
-    case "blocked": return "bg-[hsl(var(--status-blocked)/0.15)] text-[hsl(var(--status-blocked))]";
-    case "quiet": return "bg-[hsl(var(--status-quiet)/0.15)] text-[hsl(var(--status-quiet))]";
+    case "active": return "bg-[hsl(var(--status-active)/0.1)] text-[hsl(var(--status-active))]";
+    case "blocked": return "bg-[hsl(var(--status-blocked)/0.1)] text-[hsl(var(--status-blocked))]";
+    case "quiet": return "bg-[hsl(var(--status-quiet)/0.1)] text-[hsl(var(--status-quiet))]";
   }
 }
 
 function getInitials(name: string) {
-  return name
-    .split(/[\s.]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join("");
+  return name.split(/[\s.]+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
 }
 
 const workStyleFields: { label: string; key: keyof WorkStyle }[] = [
@@ -47,33 +42,36 @@ const MemberProfileView = ({ name, status, result }: MemberProfileViewProps) => 
   const role = result.work_style?.role || "Team member";
 
   return (
-    <div className="space-y-8">
-      {/* Header: Avatar + Name + Status + Role */}
+    <div className="space-y-10">
+      {/* Header */}
       <div className="flex items-center gap-4">
-        <div className={`h-12 w-12 rounded-full flex items-center justify-center text-base font-semibold shrink-0 ${getAvatarClass(status)}`}>
+        <div className={`h-14 w-14 rounded-full flex items-center justify-center text-lg font-semibold shrink-0 ${getAvatarClass(status)}`}>
           {getInitials(name)}
         </div>
-        <div className="flex items-center gap-3">
-          <h2 className="text-xl font-semibold">{name}</h2>
-          <Badge variant={statusBadgeVariant(status)}>{status}</Badge>
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">{name}</h1>
+            <Badge variant={statusBadgeVariant(status)} className="text-xs">{status}</Badge>
+          </div>
+          <p className="text-muted-foreground text-sm mt-0.5">{role}</p>
         </div>
       </div>
 
-      {/* Work style blocks */}
+      {/* Work style */}
       {result.work_style && (
-        <div data-tour="work-style" className="flex flex-wrap gap-3">
+        <div data-tour="work-style" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {workStyleFields.map(({ label, key }) => (
-            <div key={key} className="bg-secondary rounded-md px-4 py-3 min-w-[140px] max-w-[240px]">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
-              <p className="text-sm leading-snug">{result.work_style[key]}</p>
+            <div key={key} className="rounded-xl border border-border bg-card p-4">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">{label}</p>
+              <p className="text-sm leading-snug text-foreground">{result.work_style[key]}</p>
             </div>
           ))}
         </div>
       )}
 
       {/* Projects */}
-      <div className="space-y-6">
-        <h3 className="text-lg font-semibold">Projects</h3>
+      <div className="space-y-5">
+        <h2 className="text-lg font-semibold text-foreground">Projects</h2>
         {result.projects.length > 0 ? (
           result.projects.map((project, i) => (
             <ProjectCard key={i} project={project} weekLabels={result.weekLabels} />
