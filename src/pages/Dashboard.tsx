@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useLocation, Navigate } from "react-router-dom";
+import { useLocation, Navigate, useNavigate } from "react-router-dom";
+import { HelpCircle } from "lucide-react";
 import MemberProfileView from "@/components/MemberProfileView";
 import AppWalkthrough from "@/components/AppWalkthrough";
 import ManagerDashboard from "@/components/ManagerDashboard";
@@ -35,6 +36,7 @@ const Dashboard = () => {
   const userName = state?.userName ?? "Unknown";
   const chatData = state?.chatData ?? "";
   const managerResults = state?.managerResults;
+  const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>(state?.initialMode === "manager" ? "manager" : "me");
 
   if (!result) return <Navigate to="/" replace />;
@@ -56,13 +58,10 @@ const Dashboard = () => {
       <main className="flex-1 overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-10 pt-6 pb-0">
           <button
-            onClick={() => {
-              sessionStorage.removeItem("app_walkthrough_done");
-              window.dispatchEvent(new CustomEvent("restart-walkthrough"));
-            }}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => navigate("/")}
+            className="text-lg font-bold tracking-tight hover:opacity-70 transition-opacity"
           >
-            Restart tour
+            Lumos
           </button>
           <ModeToggle mode={mode} setMode={setMode} />
         </div>
@@ -86,6 +85,18 @@ const Dashboard = () => {
           )}
         </div>
       </main>
+
+      {/* Floating tour button */}
+      <button
+        onClick={() => {
+          sessionStorage.removeItem("app_walkthrough_done");
+          window.dispatchEvent(new CustomEvent("restart-walkthrough"));
+        }}
+        className="fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card shadow-md hover:shadow-lg transition-shadow"
+        title="Restart tour"
+      >
+        <HelpCircle className="h-5 w-5 text-muted-foreground" />
+      </button>
     </div>
   );
 };
