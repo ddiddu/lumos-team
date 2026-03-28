@@ -5,6 +5,8 @@ interface WalkthroughStep {
   selector: string;
   title: string;
   description: string;
+  waitForSelector?: string;
+  clickToReveal?: string;
 }
 
 const steps: WalkthroughStep[] = [
@@ -16,17 +18,29 @@ const steps: WalkthroughStep[] = [
   {
     selector: "[data-tour='project-card']",
     title: "Project Overview",
-    description: "Here's what you've been working on, week by week.",
+    description: "Here's what you've been working on. Click 'See details' to explore further.",
+    clickToReveal: "[data-tour='see-details']",
+  },
+  {
+    selector: "[data-tour='next-up']",
+    title: "Todo",
+    description: "Recommended next steps based on your work.",
+  },
+  {
+    selector: "[data-tour='members']",
+    title: "Members",
+    description: "Your team members and how you interact with them.",
+    waitForSelector: "[data-tour='members']",
+  },
+  {
+    selector: "[data-tour='weekly-breakdown']",
+    title: "Weekly Breakdown",
+    description: "A summary of each week's activity.",
   },
   {
     selector: "[data-tour='message-activity']",
     title: "Message Activity",
     description: "Your communication patterns over the last 4 weeks.",
-  },
-  {
-    selector: "[data-tour='next-up']",
-    title: "Next Up",
-    description: "Recommended next steps based on your work style.",
   },
 ];
 
@@ -35,6 +49,7 @@ const STORAGE_KEY = "dashboard_walkthrough_done";
 const DashboardWalkthrough = () => {
   const [currentStep, setCurrentStep] = useState(-1);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const [waitingForReveal, setWaitingForReveal] = useState(false);
 
   useEffect(() => {
     if (sessionStorage.getItem(STORAGE_KEY)) return;
@@ -44,7 +59,8 @@ const DashboardWalkthrough = () => {
 
   const updateRect = useCallback(() => {
     if (currentStep < 0 || currentStep >= steps.length) return;
-    const el = document.querySelector(steps[currentStep].selector);
+    const step = steps[currentStep];
+    const el = document.querySelector(step.selector);
     if (el) {
       setRect(el.getBoundingClientRect());
     }
@@ -53,7 +69,6 @@ const DashboardWalkthrough = () => {
   useEffect(() => {
     updateRect();
     window.addEventListener("resize", updateRect);
-    // Listen to scroll on all scrollable ancestors so highlight follows content
     const scrollables = document.querySelectorAll("[class*='overflow-y-auto'], [class*='overflow-auto']");
     scrollables.forEach((el) => el.addEventListener("scroll", updateRect));
     window.addEventListener("scroll", updateRect, true);
@@ -64,7 +79,46 @@ const DashboardWalkthrough = () => {
     };
   }, [updateRect]);
 
+  // When waiting for reveal (user clicked See details), watch for the target element
+  useEffect(() => {
+    if (!waitingForReveal || currentStep < 0) return;
+    const step = steps[currentStep];
+    if (!step.waitForSelector) {
+      setWaitingForReveal(false);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const el = document.querySelector(step.waitForSelector!);
+      if (el) {
+        setWaitingForReveal(false);
+        // Move to next step now that expanded content is visible
+        setCurrentStep((s) => s + 1);
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [waitingForReveal, currentStep]);
+
   const next = () => {
+    const step = steps[currentStep];
+
+    // If this step has a clickToReveal, we need the user to click See details
+    if (step.clickToReveal) {
+      const btn = document.querySelector(step.clickToReveal) as HTMLElement;
+      if (btn) {
+        btn.click();
+        // Wait for the expanded content to appear
+        const nextStep = steps[currentStep + 1];
+        if (nextStep?.waitForSelector) {
+          setWaitingForReveal(true);
+          return;
+        }
+      }
+      setCurrentStep((s) => s + 1);
+      return;
+    }
+
     if (currentStep >= steps.length - 1) {
       sessionStorage.setItem(STORAGE_KEY, "true");
       setCurrentStep(-1);
@@ -73,19 +127,14 @@ const DashboardWalkthrough = () => {
     }
   };
 
-  if (currentStep < 0 || !rect) return null;
+  if (currentStep < 0 || !rect || waitingForReveal) return null;
 
   const step = steps[currentStep];
   const pad = 8;
 
-  // Position tooltip to the right or below the highlighted element
-  const tooltipLeft = rect.right + 16;
-  const tooltipTop = rect.top + rect.height / 2;
-  const fitsRight = tooltipLeft + 300 < window.innerWidth;
-
   return (
     <>
-      {/* Overlay — pointer-events: none so background scrolls freely */}
+      {/* Overlay */}
       <div className="fixed inset-0 z-50 pointer-events-none">
         <svg className="absolute inset-0 w-full h-full">
           <defs>
@@ -120,7 +169,7 @@ const DashboardWalkthrough = () => {
         />
       </div>
 
-      {/* Fixed bottom bar — always visible & clickable */}
+      {/* Fixed bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 z-[60] border-t bg-card p-4 flex items-center justify-between pointer-events-auto">
         <div className="min-w-0 mr-4">
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">

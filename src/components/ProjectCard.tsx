@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { ChevronRight, ArrowLeft } from "lucide-react";
 import type { Project, WeekLabelInfo } from "@/types/analysis";
 
 const statusVariant = (status: Project["status"]) => {
@@ -16,9 +17,11 @@ const weeks: ("W1" | "W2" | "W3" | "W4")[] = ["W1", "W2", "W3", "W4"];
 interface ProjectCardProps {
   project: Project;
   weekLabels?: WeekLabelInfo[];
+  forceExpanded?: boolean;
 }
 
-const ProjectCard = ({ project, weekLabels }: ProjectCardProps) => {
+const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) => {
+  const [expanded, setExpanded] = useState(forceExpanded ?? false);
   const [drillDown, setDrillDown] = useState(false);
 
   const labelMap: Record<string, string> = {};
@@ -44,7 +47,6 @@ const ProjectCard = ({ project, weekLabels }: ProjectCardProps) => {
     }
   };
 
-  // Reverse weeks for display (most recent first)
   const reversedWeeks = [...weeks].reverse();
 
   return (
@@ -52,36 +54,30 @@ const ProjectCard = ({ project, weekLabels }: ProjectCardProps) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">{project.name}</h3>
-        <Badge variant={statusVariant(project.status)}>{project.status}</Badge>
+        <div className="flex items-center gap-2">
+          {expanded && (
+            <button
+              onClick={() => setExpanded(false)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-3 w-3" />
+              Overview
+            </button>
+          )}
+          <Badge variant={statusVariant(project.status)}>{project.status}</Badge>
+        </div>
       </div>
 
-      {/* Overview & left off */}
+      {/* Overview */}
       {project.overview && (
         <p className="text-sm text-muted-foreground">{project.overview}</p>
       )}
+
+      {/* Where I left off */}
       {project.left_off && (
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Where I left off</p>
           <p className="text-sm">{project.left_off}</p>
-        </div>
-      )}
-
-      {/* Members */}
-      {project.members && project.members.length > 0 && (
-        <div className="space-y-3">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Members
-          </p>
-          <div className="space-y-3">
-            {project.members.map((member, i) => (
-              <div key={i} className="text-sm">
-                <p className="font-medium">
-                  {member.name} <span className="text-muted-foreground font-normal">— {member.role}</span>
-                </p>
-                <p className="text-muted-foreground leading-snug mt-0.5">{member.interaction}</p>
-              </div>
-            ))}
-          </div>
         </div>
       )}
 
@@ -100,75 +96,111 @@ const ProjectCard = ({ project, weekLabels }: ProjectCardProps) => {
         </ul>
       </div>
 
-      {/* Weekly breakdown (most recent first) */}
-      <div className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Weekly breakdown
-        </p>
-        <div className="space-y-1.5">
-          {reversedWeeks.map((w) => (
-            <div key={w} className="flex gap-3 text-sm">
-              <span className="font-medium text-muted-foreground w-16 shrink-0">
-                {labelMap[w] || w}
-              </span>
-              <span>{project.weekly_summary[w]}</span>
+      {/* Expanded sections */}
+      {expanded && (
+        <>
+          {/* Members */}
+          {project.members && project.members.length > 0 && (
+            <div data-tour="members" className="space-y-3">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Members
+              </p>
+              <div className="space-y-3">
+                {project.members.map((member, i) => (
+                  <div key={i} className="text-sm">
+                    <p className="font-medium">
+                      {member.name} <span className="text-muted-foreground font-normal">— {member.role}</span>
+                    </p>
+                    <p className="text-muted-foreground leading-snug mt-0.5">{member.interaction}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Message activity chart */}
-      <div data-tour="message-activity" className="space-y-2">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Message activity
-          </p>
-          {drillDown && (
-            <button
-              onClick={() => setDrillDown(false)}
-              className="text-xs text-muted-foreground underline"
-            >
-              Back to weeks
-            </button>
           )}
-        </div>
-        <ResponsiveContainer width="100%" height={160}>
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-            <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={30} />
-            <Tooltip
-              contentStyle={{
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "6px",
-                fontSize: "12px",
-              }}
-            />
-            <Bar
-              dataKey="count"
-              radius={[4, 4, 0, 0]}
-              cursor={!drillDown ? "pointer" : "default"}
-              onClick={(_, index) => handleBarClick(chartData[index])}
-            >
-              {chartData.map((entry, index) => (
-                <Cell
-                  key={index}
-                  fill={
-                    !drillDown && entry.key === "W4"
-                      ? "hsl(var(--chart-1))"
-                      : "hsl(var(--foreground) / 0.15)"
-                  }
-                />
+
+          {/* Weekly breakdown */}
+          <div data-tour="weekly-breakdown" className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Weekly breakdown
+            </p>
+            <div className="space-y-1.5">
+              {reversedWeeks.map((w) => (
+                <div key={w} className="flex gap-3 text-sm">
+                  <span className="font-medium text-muted-foreground w-16 shrink-0">
+                    {labelMap[w] || w}
+                  </span>
+                  <span>{project.weekly_summary[w]}</span>
+                </div>
               ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-        {!drillDown && (
-          <p className="text-[10px] text-muted-foreground text-center">
-            Click the most recent week to see daily breakdown
-          </p>
-        )}
-      </div>
+            </div>
+          </div>
+
+          {/* Message activity chart */}
+          <div data-tour="message-activity" className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Message activity
+              </p>
+              {drillDown && (
+                <button
+                  onClick={() => setDrillDown(false)}
+                  className="text-xs text-muted-foreground underline"
+                >
+                  Back to weeks
+                </button>
+              )}
+            </div>
+            <ResponsiveContainer width="100%" height={160}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={30} />
+                <Tooltip
+                  contentStyle={{
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                  }}
+                />
+                <Bar
+                  dataKey="count"
+                  radius={[4, 4, 0, 0]}
+                  cursor={!drillDown ? "pointer" : "default"}
+                  onClick={(_, index) => handleBarClick(chartData[index])}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={index}
+                      fill={
+                        !drillDown && entry.key === "W4"
+                          ? "hsl(var(--chart-1))"
+                          : "hsl(var(--foreground) / 0.15)"
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            {!drillDown && (
+              <p className="text-[10px] text-muted-foreground text-center">
+                Click the most recent week to see daily breakdown
+              </p>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* See details button (collapsed state) */}
+      {!expanded && (
+        <button
+          data-tour="see-details"
+          onClick={() => setExpanded(true)}
+          className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+        >
+          See details
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 };
