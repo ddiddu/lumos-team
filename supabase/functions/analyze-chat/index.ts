@@ -32,10 +32,20 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
         "W1": 0, "W2": 0, "W3": 0, "W4": 0,
         "W4_daily": {"Mon": 0, "Tue": 0, "Wed": 0, "Thu": 0, "Fri": 0}
       },
+      "members": [
+        {
+          "name": "Person Name",
+          "role": "inferred role (2-4 words)",
+          "interaction": "1-2 sentences describing how the user interacts with this person — what the user asks/shares and how this person responds/contributes"
+        }
+      ],
       "next_up": ["actionable task 1", "actionable task 2", "actionable task 3"]
     }
   ]
 }
+
+IMPORTANT: The "members" array should list every other participant EXCEPT the selected user. Infer each person's role from context. Describe the interaction pattern from the user's perspective ("You ask him...", "She responds with...").
+
 
 IMPORTANT: The "message_counts" field will be provided as pre-calculated data. Use those exact values. Do NOT make up counts.
 

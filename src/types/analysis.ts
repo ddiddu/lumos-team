@@ -6,6 +6,12 @@ export interface WorkStyle {
   speech_habits: string;
 }
 
+export interface TeamMember {
+  name: string;
+  role: string;
+  interaction: string;
+}
+
 export interface Project {
   name: string;
   overview: string;
@@ -30,6 +36,7 @@ export interface Project {
       Fri: number;
     };
   };
+  members: TeamMember[];
   next_up: string[];
 }
 
