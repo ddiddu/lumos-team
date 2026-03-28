@@ -105,17 +105,16 @@ export function parseTeamsChat(raw: string): ParsedMessage[] {
  */
 export function extractParticipants(raw: string): string[] {
   const lines = raw.split("\n");
-  const refDate = new Date();
   const names = new Set<string>();
 
-  // A valid name: 2-4 words, each starting with uppercase, no digits, no special chars
-  const NAME_RE = /^[A-Z\u00C0-\u024F\uAC00-\uD7AF][a-z\u00C0-\u024F\uAC00-\uD7AF]*(?:\s+[A-Z\u00C0-\u024F\uAC00-\uD7AF][a-z\u00C0-\u024F\uAC00-\uD7AF]*){0,3}$/;
+  const DATE_TS = /^\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{2}\s+(AM|PM)$/i;
+  const DAY_TS = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}:\d{2}\s+(AM|PM)$/i;
 
   for (let i = 0; i < lines.length - 1; i++) {
     const line = lines[i].trim();
-    if (line === "" || line.length > 40) continue;
+    if (line === "") continue;
     const nextLine = lines[i + 1].trim();
-    if (NAME_RE.test(line) && parseTimestamp(nextLine, refDate)) {
+    if (DATE_TS.test(nextLine) || DAY_TS.test(nextLine)) {
       names.add(line);
     }
   }
