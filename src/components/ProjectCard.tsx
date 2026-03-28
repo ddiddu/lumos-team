@@ -34,7 +34,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
   };
 
   return (
-    <div className="rounded-lg border p-8 space-y-6">
+    <div data-tour="project-card" className="rounded-lg border p-8 space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">{project.name}</h3>
         <Badge variant={statusVariant(project.status)}>{project.status}</Badge>
@@ -57,7 +57,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
         </div>
 
         {/* Chart */}
-        <div className="space-y-2">
+        <div data-tour="message-activity" className="space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Message activity
@@ -111,7 +111,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
       </div>
 
       {/* Next up */}
-      <div className="space-y-1.5">
+      <div data-tour="next-up" className="space-y-1.5">
         <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Next up
         </p>

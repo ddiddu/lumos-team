@@ -2,6 +2,7 @@ import { useLocation, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import WorkStyleCard from "@/components/WorkStyleCard";
 import ProjectCard from "@/components/ProjectCard";
+import DashboardWalkthrough from "@/components/DashboardWalkthrough";
 import type { AnalysisResult } from "@/types/analysis";
 
 const Dashboard = () => {
@@ -12,8 +13,10 @@ const Dashboard = () => {
 
   return (
     <div className="flex min-h-screen">
+      <DashboardWalkthrough />
+
       {/* Sidebar */}
-      <aside className="w-[260px] shrink-0 border-r p-8">
+      <aside data-tour="work-style" className="w-[260px] shrink-0 border-r p-8">
         <WorkStyleCard workStyle={result.work_style} />
       </aside>
 
