@@ -111,39 +111,50 @@ export function countMessages(messages: ParsedMessage[], userName: string): Pars
     };
   }
 
-  // Sort by timestamp
+  // Use real calendar weeks (Mon-Sun) based on the most recent message
   const sorted = [...userMessages].sort(
     (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
   );
 
-  const earliest = sorted[0].timestamp;
   const latest = sorted[sorted.length - 1].timestamp;
 
-  // Divide the date range into 4 equal-ish weeks
-  const totalMs = latest.getTime() - earliest.getTime();
-  const weekMs = Math.max(totalMs / 4, 7 * 24 * 60 * 60 * 1000);
+  // Find the Monday of the latest message's week = W4 start
+  const latestDay = latest.getDay(); // 0=Sun
+  const mondayOffset = latestDay === 0 ? 6 : latestDay - 1;
+  const w4Monday = new Date(latest);
+  w4Monday.setDate(latest.getDate() - mondayOffset);
+  w4Monday.setHours(0, 0, 0, 0);
+
+  // Week boundaries: W4=latest week, W3=week before, etc.
+  const weekStarts = [
+    new Date(w4Monday.getTime() - 21 * 86400000), // W1 start
+    new Date(w4Monday.getTime() - 14 * 86400000), // W2 start
+    new Date(w4Monday.getTime() - 7 * 86400000),  // W3 start
+    w4Monday,                                       // W4 start
+  ];
 
   const weekly = { W1: 0, W2: 0, W3: 0, W4: 0 };
   const weekKeys = ["W1", "W2", "W3", "W4"] as const;
-
-  for (const msg of sorted) {
-    const elapsed = msg.timestamp.getTime() - earliest.getTime();
-    const weekIdx = Math.min(Math.floor(elapsed / weekMs), 3);
-    weekly[weekKeys[weekIdx]]++;
-  }
-
-  // Daily counts for the most recent week (W4 bucket)
-  const w4Start = earliest.getTime() + weekMs * 3;
   const daily = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0 };
-  const dayKeys = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   for (const msg of sorted) {
-    if (msg.timestamp.getTime() >= w4Start) {
-      const dayName = dayKeys[msg.timestamp.getDay()];
+    const t = msg.timestamp.getTime();
+    // Assign to week bucket
+    if (t >= weekStarts[3].getTime()) {
+      weekly.W4++;
+      const dayName = dayMap[msg.timestamp.getDay()];
       if (dayName in daily) {
         daily[dayName as keyof typeof daily]++;
       }
+    } else if (t >= weekStarts[2].getTime()) {
+      weekly.W3++;
+    } else if (t >= weekStarts[1].getTime()) {
+      weekly.W2++;
+    } else if (t >= weekStarts[0].getTime()) {
+      weekly.W1++;
     }
+    // Messages older than 4 weeks are ignored
   }
 
   return { weekly, daily };
