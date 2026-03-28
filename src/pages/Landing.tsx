@@ -10,7 +10,8 @@ const Landing = () => {
         <h1 className="text-4xl font-semibold tracking-tight">Waypoint</h1>
         <p className="text-lg font-medium">Know where your team actually stands.</p>
         <p className="text-muted-foreground leading-relaxed">
-          Connect Teams or Slack — or paste your chat directly — and see who's active, who's blocked, and what needs your attention.
+          Stop chasing updates. The answers are already in your chat. Connect Teams or Slack — or paste your chat
+          directly — and see who's active, who's blocked, and what needs your attention.
         </p>
       </div>
 
