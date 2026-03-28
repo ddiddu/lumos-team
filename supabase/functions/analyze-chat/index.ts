@@ -49,7 +49,7 @@ IMPORTANT: The "members" array should list every other participant EXCEPT the se
 
 IMPORTANT: The "message_counts" field will be provided as pre-calculated data. Use those exact values. Do NOT make up counts.
 
-CRITICAL: Return exactly ONE project that summarizes ALL the work discussed. Do NOT split into multiple projects.
+CRITICAL: Identify ALL distinct projects or work streams the user is involved in. Each project should be a separate entry in the "projects" array. A project is a distinct topic, initiative, or workstream. If there is truly only one, return one. But if the chat covers multiple topics, return multiple projects.
 
 CRITICAL: All work_style fields MUST be extremely concise — max 1 short sentence or a few comma-separated keywords. No paragraphs.
 

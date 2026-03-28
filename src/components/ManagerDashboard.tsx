@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import type { AnalysisResult, WeekLabelInfo } from "@/types/analysis";
@@ -56,13 +56,28 @@ const statusBadgeVariant = (status: string) => {
 };
 
 /**
- * Compute member status from chat data with enhanced blocked detection.
+ * Compute member status from chat data.
+ * Card status = worst status among all their projects (from AI analysis).
+ * Fallback: detect from raw messages if no analysis.
  */
 function computeStatusFromChat(
   memberName: string,
   allMessages: ReturnType<typeof parseTeamsChat>,
-  latestTimestamp: Date
+  latestTimestamp: Date,
+  analysisResult?: AnalysisResult | null
 ): MemberStatus {
+  // If we have analysis results, derive status from project statuses
+  if (analysisResult && analysisResult.projects.length > 0) {
+    let worst: MemberStatus = "active";
+    for (const p of analysisResult.projects) {
+      const ps = p.status as MemberStatus;
+      if (ps === "blocked") return "blocked";
+      if (ps === "quiet" && worst !== "blocked") worst = "quiet";
+    }
+    return worst;
+  }
+
+  // Fallback: raw message analysis
   const memberMsgs = allMessages.filter(
     (m) => m.sender.toLowerCase() === memberName.toLowerCase()
   );
@@ -75,14 +90,12 @@ function computeStatusFromChat(
 
   if (lastMsg.timestamp < threeDaysAgo) return "quiet";
 
-  // Check blocked signals in recent messages
   const recentMsgs = sorted.slice(0, 10);
-  const blockedPatterns = /\b(waiting for|waiting on|ooo|out of office|out of pocket|can'?t proceed|unable to proceed|on leave|pto|vacation|unavailable)\b/i;
+  const blockedPatterns = /\b(waiting for|waiting on|ooo|out of office|out of pocket|can'?t proceed|unable to proceed|on leave|pto|vacation|unavailable|delay|delayed|apologized for late reply|apologi[sz]e[ds]? for the late reply)\b/i;
   for (const msg of recentMsgs) {
     if (blockedPatterns.test(msg.text)) return "blocked";
   }
 
-  // Check for unanswered question: last message contains "?" and no reply from others after it
   if (lastMsg.text.includes("?")) {
     const allSorted = [...allMessages].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
     const lastMsgIdx = allSorted.findIndex(
@@ -100,17 +113,12 @@ function computeStatusFromChat(
   return "active";
 }
 
-/**
- * Filter chat data to only include messages from a specific person.
- * Preserves the Teams chat format so the analyze-chat function can parse it.
- */
 function filterChatForMember(rawChat: string, memberName: string): string {
   const messages = parseTeamsChat(rawChat);
   const memberMsgs = messages.filter(
     (m) => m.sender.toLowerCase() === memberName.toLowerCase()
   );
 
-  // Reconstruct chat format for the edge function
   return memberMsgs
     .map((m) => {
       const month = m.timestamp.getMonth() + 1;
@@ -130,7 +138,6 @@ function getDateRangeLabel(messages: ReturnType<typeof parseTeamsChat>): string 
   const sorted = [...messages].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   const latest = sorted[sorted.length - 1].timestamp;
 
-  // Find the Monday of the latest week
   const latestDay = latest.getDay();
   const mondayOffset = latestDay === 0 ? 6 : latestDay - 1;
   const monday = new Date(latest);
@@ -148,6 +155,15 @@ function getDateRangeLabel(messages: ReturnType<typeof parseTeamsChat>): string 
     return `${mStart} ${monday.getDate()} – ${mEnd} ${friday.getDate()}, ${year}`;
   }
   return `${mStart} ${monday.getDate()} – ${mEnd} ${friday.getDate()}, ${year}`;
+}
+
+// Cache for manager analysis results
+const managerCache = new Map<string, MemberCardData[]>();
+
+function getCacheKey(chatData: string, userName: string): string {
+  // Simple hash based on length + first/last chars
+  const key = `${userName}:${chatData.length}:${chatData.slice(0, 50)}:${chatData.slice(-50)}`;
+  return key;
 }
 
 interface ManagerDashboardProps {
@@ -170,6 +186,16 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
     let cancelled = false;
 
     async function analyzeTeam() {
+      const cacheKey = getCacheKey(chatData, userName);
+
+      // Check cache first
+      const cached = managerCache.get(cacheKey);
+      if (cached) {
+        setMembers(cached);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
 
       const participantNames = extractParticipants(chatData);
@@ -186,9 +212,6 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
       const latestTimestamp = allMessages.length > 0
         ? new Date(Math.max(...allMessages.map((m) => m.timestamp.getTime())))
         : new Date();
-
-      // Analyze each member by calling the SAME analyze-chat function
-      const cards: MemberCardData[] = [];
 
       const analyzePromises = otherMembers.map(async (memberName) => {
         try {
@@ -208,7 +231,6 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
           const counts = countMessages(memberMessages.map(m => ({...m})), memberName);
           const wLabels = getWeekLabels(memberMessages);
 
-          // Get other participants relative to this member
           const otherParticipants = participantNames.filter(
             (n) => n.toLowerCase() !== memberName.toLowerCase()
           );
@@ -228,7 +250,7 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
           const analysisResult = data as AnalysisResult;
           analysisResult.weekLabels = wLabels.map((w) => ({ key: w.key, label: w.label }));
 
-          const status = computeStatusFromChat(memberName, allMessages, latestTimestamp);
+          const status = computeStatusFromChat(memberName, allMessages, latestTimestamp, analysisResult);
 
           return {
             name: memberName,
@@ -254,6 +276,8 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
         const sortedCards = results.sort(
           (a, b) => (STATUS_PRIORITY[b.status] ?? 0) - (STATUS_PRIORITY[a.status] ?? 0)
         );
+        // Store in cache
+        managerCache.set(cacheKey, sortedCards);
         setMembers(sortedCards);
       } catch (e) {
         console.error("Team analysis failed:", e);
@@ -267,17 +291,14 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
   }, [chatData, userName]);
 
   const statusCounts = {
-    active: members.filter((m) => m.status === "active").length,
     blocked: members.filter((m) => m.status === "blocked").length,
     quiet: members.filter((m) => m.status === "quiet").length,
+    active: members.filter((m) => m.status === "active").length,
   };
 
+  // Filter: HIDE non-matching cards completely
   const displayMembers = statusFilter
-    ? [...members].sort((a, b) => {
-        const aMatch = a.status === statusFilter ? 0 : 1;
-        const bMatch = b.status === statusFilter ? 0 : 1;
-        return aMatch - bMatch;
-      })
+    ? members.filter((m) => m.status === statusFilter)
     : members;
 
   if (loading) {
@@ -334,9 +355,9 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData }: ManagerDas
         <p className="text-sm text-muted-foreground mt-1">
           {members.length} members · {dateRange}
         </p>
-        {/* Status pills */}
+        {/* Status pills — order: blocked, quiet, active */}
         <div className="flex items-center gap-2 mt-3" data-tour-manager="status-badge">
-          {(["quiet", "blocked", "active"] as MemberStatus[]).map((status) => {
+          {(["blocked", "quiet", "active"] as MemberStatus[]).map((status) => {
             const count = statusCounts[status];
             if (count === 0) return null;
             const isSelected = statusFilter === status;
