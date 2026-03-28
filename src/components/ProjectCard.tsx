@@ -88,25 +88,6 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
       {/* Expanded sections */}
       {expanded && (
         <>
-          {/* Members */}
-          {project.members && project.members.length > 0 && (
-            <div data-tour="members" className="space-y-3">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Members
-              </p>
-              <div className="space-y-3">
-                {project.members.map((member, i) => (
-                  <div key={i} className="text-sm">
-                    <p className="font-medium">
-                      {member.name} <span className="text-muted-foreground font-normal">— {member.role}</span>
-                    </p>
-                    <p className="text-muted-foreground leading-snug mt-0.5">{member.interaction}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Weekly breakdown */}
           <div data-tour="weekly-breakdown" className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
