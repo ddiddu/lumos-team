@@ -376,9 +376,9 @@ const DataInput = () => {
                   toast.error("Failed to load sample data.");
                 }
               }}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+              className="mt-4 inline-flex items-center gap-2 rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 px-5 py-2.5 text-sm font-medium text-primary hover:border-primary hover:bg-primary/10 transition-all duration-200"
             >
-              Try with sample data →
+              ✨ Try with sample data
             </button>
 
             <div className="px-px">
