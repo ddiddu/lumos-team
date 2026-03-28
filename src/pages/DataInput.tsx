@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { parseTeamsChat, countMessages, extractParticipants, getWeekLabels } from "@/lib/chatParser";
+import { parseTeamsChat, extractParticipants, getWeekLabels } from "@/lib/chatParser";
 import { MessageSquare, Hash, FileText } from "lucide-react";
 import type { AnalysisResult } from "@/types/analysis";
 
@@ -15,31 +15,14 @@ interface ClassifiedProject {
   canonical_name: string;
   aliases: string[];
   members: string[];
-}
-
-function filterChatForMember(rawChat: string, memberName: string): string {
-  const messages = parseTeamsChat(rawChat);
-  const memberMsgs = messages.filter(
-    (m) => m.sender.toLowerCase() === memberName.toLowerCase()
-  );
-  return memberMsgs
-    .map((m) => {
-      const month = m.timestamp.getMonth() + 1;
-      const day = m.timestamp.getDate();
-      const hours = m.timestamp.getHours();
-      const minutes = m.timestamp.getMinutes();
-      const ampm = hours >= 12 ? "PM" : "AM";
-      const h12 = hours % 12 || 12;
-      const ts = `${month}/${day} ${h12}:${String(minutes).padStart(2, "0")} ${ampm}`;
-      return `${m.sender}\n${ts}\n${m.text}`;
-    })
-    .join("\n\n");
+  chunks: string[];
 }
 
 const LOADING_STEPS = [
   { key: "messages", label: "Reading messages..." },
   { key: "projects", label: "Identifying projects..." },
-  { key: "team", label: "Analyzing team members..." },
+  { key: "cards", label: "Analyzing project details..." },
+  { key: "team", label: "Building member profiles..." },
   { key: "dashboard", label: "Building your dashboard..." },
 ];
 
@@ -74,6 +57,92 @@ const DataInput = () => {
     }, 800);
   };
 
+  /**
+   * Generate project cards for a single member across all their projects.
+   * Returns an array of project card objects.
+   */
+  async function generateCardsForMember(
+    memberName: string,
+    projects: ClassifiedProject[],
+    weekLabels: any[],
+    perspective: "second" | "third"
+  ) {
+    // Filter projects where this member is involved
+    const memberProjects = projects.filter((p) =>
+      p.members.some((m) => m.toLowerCase() === memberName.toLowerCase())
+    );
+
+    if (memberProjects.length === 0) return [];
+
+    // Generate cards in parallel (one per project)
+    const cardPromises = memberProjects.map(async (project) => {
+      try {
+        const { data, error } = await supabase.functions.invoke("generate-project-card", {
+          body: {
+            memberName,
+            projectName: project.canonical_name,
+            chunks: project.chunks,
+            weekLabels,
+            perspective,
+            allMembers: project.members,
+          },
+        });
+        if (error) {
+          console.error(`Card generation failed for ${memberName}/${project.canonical_name}:`, error);
+          return null;
+        }
+        return data;
+      } catch (e) {
+        console.error(`Card generation error for ${memberName}/${project.canonical_name}:`, e);
+        return null;
+      }
+    });
+
+    const results = await Promise.all(cardPromises);
+    return results.filter(Boolean);
+  }
+
+  /**
+   * Aggregate a member's project cards into a full AnalysisResult.
+   */
+  async function aggregateMember(
+    memberName: string,
+    projectCards: any[],
+    weekLabels: any[],
+    perspective: "second" | "third"
+  ): Promise<AnalysisResult> {
+    if (projectCards.length === 0) {
+      return {
+        work_style: { role: "Team member", style: "", likes: "", dislikes: "", speech_habits: "" },
+        projects: [],
+        weekLabels: weekLabels.map((w) => ({ key: w.key, label: w.label })),
+      };
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke("aggregate-member", {
+        body: { memberName, projectCards, perspective },
+      });
+
+      if (error) throw error;
+
+      const result: AnalysisResult = {
+        work_style: data.work_style,
+        projects: data.projects,
+        weekLabels: weekLabels.map((w) => ({ key: w.key, label: w.label })),
+      };
+      return result;
+    } catch (e) {
+      console.error(`Aggregation failed for ${memberName}:`, e);
+      // Fallback: return cards without work style
+      return {
+        work_style: { role: "Team member", style: "", likes: "", dislikes: "", speech_habits: "" },
+        projects: projectCards,
+        weekLabels: weekLabels.map((w) => ({ key: w.key, label: w.label })),
+      };
+    }
+  }
+
   const analyzeWithUser = async (userName: string) => {
     setPhase("loading");
     setActiveStep(0); // Reading messages...
@@ -81,103 +150,70 @@ const DataInput = () => {
 
     try {
       const parsed = parseTeamsChat(chatData);
-      const counts = countMessages(parsed, userName);
       const weekLabels = getWeekLabels(parsed);
-      const otherParticipants = participants.filter(
-        (n) => n.toLowerCase() !== userName.toLowerCase()
-      );
 
-      // Step 1: Reading messages — done
+      // ── STEP 1: Classify all projects ──
       setActiveStep(1); // Identifying projects...
 
-      // Classify all projects first
       let canonicalProjects: ClassifiedProject[] = [];
-      try {
-        const { data: classifyData, error: classifyError } = await supabase.functions.invoke("classify-projects", {
-          body: { chatData, participantNames: participants },
-        });
-        if (!classifyError && classifyData?.projects) {
-          canonicalProjects = classifyData.projects;
-        }
-      } catch (e) {
-        console.warn("Project classification failed, continuing without canonical names:", e);
-      }
-
-      // Step 2: Analyze the selected user (Me mode)
-      setActiveStep(isManager ? 2 : 1); // Analyzing team members / Identifying projects
-
-      const { data, error } = await supabase.functions.invoke("analyze-chat", {
-        body: {
-          chatData,
-          userName,
-          messageCounts: counts,
-          weekLabels,
-          participantNames: otherParticipants,
-          perspective: "second", // Me mode = second person
-          canonicalProjects,
-        },
+      const { data: classifyData, error: classifyError } = await supabase.functions.invoke("classify-projects", {
+        body: { chatData, participantNames: participants },
       });
+      if (classifyError) {
+        console.error("Project classification failed:", classifyError);
+        throw new Error("Failed to classify projects");
+      }
+      canonicalProjects = classifyData?.projects || [];
 
-      if (error) throw error;
+      // ── STEP 2+3: Generate project cards ──
+      setActiveStep(2); // Analyzing project details...
 
-      const result = data as AnalysisResult;
-      result.weekLabels = weekLabels.map((w) => ({ key: w.key, label: w.label }));
+      // For "Me" mode, generate cards for the selected user
+      const meCards = await generateCardsForMember(userName, canonicalProjects, weekLabels, "second");
 
-      // Step 3: If manager mode, analyze all team members
-      let managerResults: Record<string, AnalysisResult> | undefined;
-
+      // For Manager mode, also generate cards for all other members in parallel
+      let managerCardsByMember: Record<string, any[]> = {};
       if (isManager) {
-        setActiveStep(2); // Analyzing team members...
-
-        const memberAnalyses: Record<string, AnalysisResult> = {};
-        const analyzePromises = otherParticipants.map(async (memberName) => {
-          try {
-            const filteredChat = filterChatForMember(chatData, memberName);
-            if (!filteredChat.trim()) return;
-
-            const memberMessages = parsed.filter(
-              (m) => m.sender.toLowerCase() === memberName.toLowerCase()
-            );
-            const mCounts = countMessages(memberMessages, memberName);
-            const mWeekLabels = getWeekLabels(memberMessages);
-            const mOtherParticipants = participants.filter(
-              (n) => n.toLowerCase() !== memberName.toLowerCase()
-            );
-
-            const { data: mData, error: mError } = await supabase.functions.invoke("analyze-chat", {
-              body: {
-                chatData: filteredChat,
-                userName: memberName,
-                messageCounts: mCounts,
-                weekLabels: mWeekLabels,
-                participantNames: mOtherParticipants,
-                perspective: "third", // Manager mode = third person
-                canonicalProjects,
-              },
-            });
-
-            if (!mError && mData) {
-              const mResult = mData as AnalysisResult;
-              mResult.weekLabels = mWeekLabels.map((w) => ({ key: w.key, label: w.label }));
-              memberAnalyses[memberName] = mResult;
-            }
-          } catch (e) {
-            console.error(`Analysis failed for ${memberName}:`, e);
-          }
+        const otherMembers = participants.filter(
+          (n) => n.toLowerCase() !== userName.toLowerCase()
+        );
+        const memberCardPromises = otherMembers.map(async (memberName) => {
+          const cards = await generateCardsForMember(memberName, canonicalProjects, weekLabels, "third");
+          return { memberName, cards };
         });
-
-        await Promise.all(analyzePromises);
-        managerResults = memberAnalyses;
+        const memberCardResults = await Promise.all(memberCardPromises);
+        for (const { memberName, cards } of memberCardResults) {
+          managerCardsByMember[memberName] = cards;
+        }
       }
 
-      setActiveStep(3); // Building your dashboard...
+      // ── STEP 4: Aggregate member profiles ──
+      setActiveStep(3); // Building member profiles...
 
-      // Small delay for the last step to be visible
+      const meResult = await aggregateMember(userName, meCards, weekLabels, "second");
+
+      let managerResults: Record<string, AnalysisResult> | undefined;
+      if (isManager) {
+        const aggregatePromises = Object.entries(managerCardsByMember).map(
+          async ([memberName, cards]) => {
+            const result = await aggregateMember(memberName, cards, weekLabels, "third");
+            return { memberName, result };
+          }
+        );
+        const aggregated = await Promise.all(aggregatePromises);
+        managerResults = {};
+        for (const { memberName, result } of aggregated) {
+          managerResults[memberName] = result;
+        }
+      }
+
+      // ── STEP 5: Navigate to dashboard ──
+      setActiveStep(4); // Building your dashboard...
       await new Promise((r) => setTimeout(r, 500));
 
       navigate("/dashboard", {
         state: {
-          result,
+          result: meResult,
           userName,
           chatData,
           initialMode: isManager ? "manager" : "me",
