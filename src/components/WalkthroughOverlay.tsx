@@ -26,6 +26,16 @@ const WalkthroughOverlay = ({ steps, storageKey, maskId }: WalkthroughOverlayPro
     return () => clearTimeout(timer);
   }, [storageKey]);
 
+  useEffect(() => {
+    const handler = () => {
+      setCurrentStep(0);
+      setRect(null);
+      setWaitingForReveal(false);
+    };
+    window.addEventListener("restart-walkthrough", handler);
+    return () => window.removeEventListener("restart-walkthrough", handler);
+  }, []);
+
   // Scroll element into view on step change
   useEffect(() => {
     if (currentStep < 0 || currentStep >= steps.length) return;
