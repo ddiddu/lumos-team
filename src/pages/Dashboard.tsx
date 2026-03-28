@@ -38,7 +38,7 @@ const Dashboard = () => {
         </div>
         <div className="space-y-6">
           {result.projects.map((project, i) => (
-            <ProjectCard key={i} project={project} />
+            <ProjectCard key={i} project={project} weekLabels={result.weekLabels} />
           ))}
         </div>
       </main>

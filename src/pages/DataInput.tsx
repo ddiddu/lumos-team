@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { parseTeamsChat, countMessages } from "@/lib/chatParser";
+import { parseTeamsChat, countMessages, extractParticipants, getWeekLabels } from "@/lib/chatParser";
 import { MessageSquare, Hash, FileText } from "lucide-react";
 import type { AnalysisResult } from "@/types/analysis";
 
@@ -17,10 +17,9 @@ const DataInput = () => {
   const [phase, setPhase] = useState<Phase>("input");
   const [loadingText, setLoadingText] = useState("");
   const [participants, setParticipants] = useState<string[]>([]);
-  const [parsedMessages, setParsedMessages] = useState<ReturnType<typeof parseTeamsChat>>([]);
   const navigate = useNavigate();
 
-  const extractParticipants = () => {
+  const extractAndShowParticipants = () => {
     if (!chatData.trim()) {
       toast.error("Please paste some chat data first.");
       return;
@@ -30,9 +29,7 @@ const DataInput = () => {
     setLoadingText("Reading participants...");
 
     setTimeout(() => {
-      const parsed = parseTeamsChat(chatData);
-      setParsedMessages(parsed);
-      const names = [...new Set(parsed.map((m) => m.sender))];
+      const names = extractParticipants(chatData);
       if (names.length === 0) {
         toast.error("No participants found. Check your chat format.");
         setPhase("input");
@@ -59,16 +56,19 @@ const DataInput = () => {
     }, 2000);
 
     try {
-      const counts = countMessages(parsedMessages, userName);
+      const parsed = parseTeamsChat(chatData);
+      const counts = countMessages(parsed, userName);
+      const weekLabels = getWeekLabels(parsed);
 
       const { data, error } = await supabase.functions.invoke("analyze-chat", {
-        body: { chatData, userName, messageCounts: counts },
+        body: { chatData, userName, messageCounts: counts, weekLabels },
       });
 
       clearInterval(interval);
       if (error) throw error;
 
       const result = data as AnalysisResult;
+      result.weekLabels = weekLabels.map((w) => ({ key: w.key, label: w.label }));
       navigate("/dashboard", { state: { result } });
     } catch (e) {
       clearInterval(interval);
@@ -176,7 +176,7 @@ const DataInput = () => {
             />
 
             <div className="flex justify-end">
-              <Button onClick={extractParticipants} disabled={!chatData.trim()}>
+              <Button onClick={extractAndShowParticipants} disabled={!chatData.trim()}>
                 Analyze
               </Button>
             </div>
