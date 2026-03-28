@@ -22,7 +22,7 @@ const WorkStyleCard = ({ workStyle }: WorkStyleCardProps) => {
         {fields.map(({ label, key }) => (
           <div key={key}>
             <p className="text-xs font-medium text-muted-foreground mb-0.5">{label}</p>
-            <p className="text-sm leading-snug line-clamp-2">{workStyle[key]}</p>
+            <p className="text-sm leading-snug">{workStyle[key]}</p>
           </div>
         ))}
       </div>
