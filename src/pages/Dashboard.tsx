@@ -9,6 +9,27 @@ import type { AnalysisResult } from "@/types/analysis";
 
 type Mode = "me" | "manager";
 
+const ModeToggle = ({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void }) => (
+  <div className="inline-flex rounded-lg border p-0.5">
+    <button
+      onClick={() => setMode("me")}
+      className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+        mode === "me" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      Me
+    </button>
+    <button
+      onClick={() => setMode("manager")}
+      className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+        mode === "manager" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      Manager
+    </button>
+  </div>
+);
+
 const Dashboard = () => {
   const location = useLocation();
   const state = location.state as { result?: AnalysisResult; userName?: string; chatData?: string; initialMode?: string; managerResults?: Record<string, AnalysisResult>; canonicalProjects?: any[] } | undefined;
