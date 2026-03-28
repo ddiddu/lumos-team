@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,8 @@ const DataInput = () => {
   const [loadingText, setLoadingText] = useState("");
   const [participants, setParticipants] = useState<string[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
+  const incomingMode = (location.state as { mode?: string })?.mode;
 
   const extractAndShowParticipants = () => {
     if (!chatData.trim()) {
@@ -73,7 +75,7 @@ const DataInput = () => {
 
       const result = data as AnalysisResult;
       result.weekLabels = weekLabels.map((w) => ({ key: w.key, label: w.label }));
-      navigate("/dashboard", { state: { result, userName, chatData } });
+      navigate("/dashboard", { state: { result, userName, chatData, initialMode: incomingMode === "manager" ? "manager" : "me" } });
     } catch (e) {
       clearInterval(interval);
       console.error(e);
