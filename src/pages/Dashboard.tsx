@@ -58,13 +58,10 @@ const Dashboard = () => {
       <main className="flex-1 overflow-hidden flex flex-col">
         <div className="flex items-center justify-between px-10 pt-6 pb-0">
           <button
-            onClick={() => {
-              sessionStorage.removeItem("app_walkthrough_done");
-              window.dispatchEvent(new CustomEvent("restart-walkthrough"));
-            }}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => navigate("/")}
+            className="text-lg font-bold tracking-tight hover:opacity-70 transition-opacity"
           >
-            Restart tour
+            Lumos
           </button>
           <ModeToggle mode={mode} setMode={setMode} />
         </div>
