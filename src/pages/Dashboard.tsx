@@ -69,24 +69,7 @@ const Dashboard = () => {
         <main className="flex-1 overflow-hidden flex flex-col">
           <div className="flex items-center justify-between px-10 pt-6 pb-0">
             <div />
-            <div className="inline-flex rounded-lg border p-0.5">
-              <button
-                onClick={() => setMode("me")}
-                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                  mode === "me" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Me
-              </button>
-              <button
-                onClick={() => setMode("manager")}
-                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-                  mode === "manager" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Manager
-              </button>
-            </div>
+            <ModeToggle mode={mode} setMode={setMode} />
           </div>
           <div className="flex-1 overflow-y-auto">
             <ManagerDashboard result={result} userName={userName} weekLabels={result.weekLabels} chatData={chatData} managerResults={managerResults} />
