@@ -7,8 +7,8 @@ const Landing = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-10 px-4">
       <div className="text-center max-w-lg space-y-4">
-        <h1 className="text-4xl font-semibold tracking-tight">Waypoint</h1>
-        <p className="text-lg font-medium">Know where your team actually stands.</p>
+        <h1 className="text-4xl font-semibold tracking-tight">Lumos</h1>
+        <p className="text-lg font-medium">Illuminate your team's path forward.</p>
         <p className="text-muted-foreground leading-relaxed">
           Stop chasing updates. The answers are already in your chat. Instantly know who's active, who's blocked, and
           what needs your attention.
