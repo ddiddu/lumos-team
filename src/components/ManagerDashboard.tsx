@@ -57,9 +57,10 @@ const statusBadgeVariant = (status: string) => {
 function computeStatusFromChat(
   memberName: string,
   allMessages: ReturnType<typeof parseTeamsChat>,
-  latestTimestamp: Date,
+  _latestTimestamp: Date,
   analysisResult?: AnalysisResult | null
 ): MemberStatus {
+  const now = new Date();
   if (analysisResult && analysisResult.projects.length > 0) {
     let worst: MemberStatus = "active";
     for (const p of analysisResult.projects) {
