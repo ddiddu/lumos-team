@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { parseTeamsChat, extractParticipants, getWeekLabels } from "@/lib/chatParser";
-import { MessageSquare, Hash, FileText, ArrowLeft, Loader2 } from "lucide-react";
+import { MessageSquare, Hash, FileText, ArrowLeft, Loader2, Lightbulb, Search, Zap, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import type { AnalysisResult } from "@/types/analysis";
 
@@ -201,7 +201,9 @@ const DataInput = () => {
             funFactVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
           }`}
         >
-          <p className="text-2xl mb-2">{card.emoji}</p>
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted mx-auto mb-3">
+            <card.icon className="h-4 w-4 text-foreground" />
+          </div>
           {card.title && <p className="text-xs font-semibold text-foreground mb-2">{card.title}</p>}
           <p className="text-sm text-muted-foreground leading-relaxed">{card.body}</p>
           {card.source && <p className="text-[11px] text-muted-foreground/60 mt-2">— {card.source}</p>}
