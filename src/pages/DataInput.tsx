@@ -73,7 +73,7 @@ const DataInput = () => {
 
       const result = data as AnalysisResult;
       result.weekLabels = weekLabels.map((w) => ({ key: w.key, label: w.label }));
-      navigate("/dashboard", { state: { result } });
+      navigate("/dashboard", { state: { result, userName } });
     } catch (e) {
       clearInterval(interval);
       console.error(e);
