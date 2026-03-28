@@ -11,9 +11,10 @@ type Mode = "me" | "manager";
 
 const Dashboard = () => {
   const location = useLocation();
-  const state = location.state as { result?: AnalysisResult; userName?: string } | undefined;
+  const state = location.state as { result?: AnalysisResult; userName?: string; chatData?: string } | undefined;
   const result = state?.result;
   const userName = state?.userName ?? "Unknown";
+  const chatData = state?.chatData ?? "";
   const [mode, setMode] = useState<Mode>("me");
 
   if (!result) return <Navigate to="/" replace />;
