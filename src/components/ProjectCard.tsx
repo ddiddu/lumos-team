@@ -113,14 +113,19 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
               Weekly breakdown
             </p>
             <div className="space-y-1.5">
-              {reversedWeeks.map((w) => (
-                <div key={w} className="flex gap-3 text-sm">
-                  <span className="font-medium text-muted-foreground w-16 shrink-0">
-                    {labelMap[w] || w}
-                  </span>
-                  <span>{project.weekly_summary[w]}</span>
-                </div>
-              ))}
+              {reversedWeeks.map((w) => {
+                const summary = project.weekly_summary[w];
+                return (
+                  <div key={w} className="flex gap-3 text-sm">
+                    <span className="font-medium text-muted-foreground w-28 shrink-0">
+                      {labelMap[w] || w}
+                    </span>
+                    <span className={!summary ? "text-muted-foreground italic" : ""}>
+                      {summary || "No activity"}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -176,6 +181,15 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
               </p>
             )}
           </div>
+
+          {/* Collapse button at bottom */}
+          <button
+            onClick={() => setExpanded(false)}
+            className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mx-auto"
+          >
+            Collapse
+            <ChevronUp className="h-4 w-4" />
+          </button>
         </>
       )}
 
