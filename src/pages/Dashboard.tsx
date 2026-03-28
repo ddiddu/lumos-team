@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useLocation, Navigate } from "react-router-dom";
 import WorkStyleCard from "@/components/WorkStyleCard";
-import WorkStyleCard from "@/components/WorkStyleCard";
 import ProjectCard from "@/components/ProjectCard";
 import DashboardWalkthrough from "@/components/DashboardWalkthrough";
 import ManagerDashboard from "@/components/ManagerDashboard";
