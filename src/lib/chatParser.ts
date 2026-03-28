@@ -174,8 +174,8 @@ export function getWeekLabels(_messages?: ParsedMessage[]): WeekLabel[] {
     const mStart = MONTH_NAMES[monday.getMonth()];
     const mEnd = MONTH_NAMES[friday.getMonth()];
     const label = mStart === mEnd
-      ? `${mStart} ${monday.getDate()} – ${friday.getDate()}`
-      : `${mStart} ${monday.getDate()} – ${mEnd} ${friday.getDate()}`;
+      ? `${mStart} ${monday.getDate()}-${friday.getDate()}`
+      : `${mStart} ${monday.getDate()}-${mEnd} ${friday.getDate()}`;
     return { key: keys[i], label };
   });
 }
