@@ -131,6 +131,9 @@ export function extractParticipants(raw: string): string[] {
     // Reject overly long lines (likely message content)
     if (line.length > 40) continue;
 
+    // Reject names with more than 2 words
+    if (line.split(/\s+/).length > 2) continue;
+
     names.add(line);
   }
 
