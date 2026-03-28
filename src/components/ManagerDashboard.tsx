@@ -4,7 +4,7 @@ import { ChevronRight, ArrowLeft } from "lucide-react";
 import type { AnalysisResult, WeekLabelInfo } from "@/types/analysis";
 import { parseTeamsChat, extractParticipants } from "@/lib/chatParser";
 import ManagerWalkthrough from "@/components/ManagerWalkthrough";
-import ProjectCard from "@/components/ProjectCard";
+import MemberProfileView from "@/components/MemberProfileView";
 
 type MemberStatus = "active" | "blocked" | "quiet";
 
@@ -180,23 +180,12 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
           <ArrowLeft className="h-4 w-4" />
           Back to team
         </button>
-        <div className="mb-6 flex items-center gap-3">
-          <div className={`h-12 w-12 rounded-full flex items-center justify-center text-base font-semibold ${getAvatarClass(selectedMember.status)}`}>
-            {getInitials(selectedMember.name)}
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">{selectedMember.name}</h2>
-            <p className="text-sm text-muted-foreground">{selectedMember.role}</p>
-          </div>
-          <Badge variant={statusBadgeVariant(selectedMember.status)}>{selectedMember.status}</Badge>
-        </div>
         {memberResult ? (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Projects</h3>
-            {memberResult.projects.map((project, i) => (
-              <ProjectCard key={i} project={project} weekLabels={memberResult.weekLabels} />
-            ))}
-          </div>
+          <MemberProfileView
+            name={selectedMember.name}
+            status={selectedMember.status}
+            result={memberResult}
+          />
         ) : (
           <p className="text-sm text-muted-foreground">No project activity found for this member.</p>
         )}

@@ -88,25 +88,6 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
       {/* Expanded sections */}
       {expanded && (
         <>
-          {/* Members */}
-          {project.members && project.members.length > 0 && (
-            <div data-tour="members" className="space-y-3">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Members
-              </p>
-              <div className="space-y-3">
-                {project.members.map((member, i) => (
-                  <div key={i} className="text-sm">
-                    <p className="font-medium">
-                      {member.name} <span className="text-muted-foreground font-normal">— {member.role}</span>
-                    </p>
-                    <p className="text-muted-foreground leading-snug mt-0.5">{member.interaction}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Weekly breakdown */}
           <div data-tour="weekly-breakdown" className="space-y-2">
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -176,6 +157,32 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
               </p>
             )}
           </div>
+
+          {/* Collaborators */}
+          {project.members && project.members.length > 0 && (
+            <div data-tour="members" className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Collaborators
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {project.members.map((member, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 bg-secondary rounded-full px-3 py-1.5"
+                  >
+                    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0">
+                      {member.name.split(/[\s.]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("")}
+                    </div>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-xs font-medium whitespace-nowrap">{member.name}</span>
+                      <span className="text-[11px] text-muted-foreground truncate">{member.interaction}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Collapse button at bottom of expanded view */}
           <button
             onClick={() => setExpanded(false)}
