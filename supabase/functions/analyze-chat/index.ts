@@ -35,15 +35,16 @@ const SYSTEM_PROMPT = `You are an expert work chat analyzer. Given a pasted chat
   ]
 }
 
-IMPORTANT: The "message_counts" field will be provided to you as pre-calculated data from real timestamp parsing. You MUST use the provided message counts exactly as given for each project. Include the W4_daily breakdown in each project. Distribute the total counts across projects proportionally based on how many messages relate to each project.
+IMPORTANT: The "message_counts" field will be provided to you as pre-calculated data from real timestamp parsing. You MUST use the provided message counts exactly as given. Include the W4_daily breakdown. Use the total counts directly for the single project.
+
+CRITICAL: Return exactly ONE project that summarizes ALL the work discussed in the chat. Do NOT split into multiple projects. Combine all topics into a single holistic project entry.
 
 Focus your analysis on:
 1. Identifying the user's work style from their messages (the user whose name is provided)
-2. Extracting distinct projects being discussed
-3. Writing accurate weekly summaries
-4. Suggesting actionable next steps
+2. Writing accurate weekly summaries covering all work
+3. Suggesting actionable next steps
 
-Extract at least 2 projects if possible. Return ONLY valid JSON, no markdown fences.`;
+Return ONLY valid JSON, no markdown fences.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
