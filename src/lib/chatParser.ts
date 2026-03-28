@@ -103,33 +103,18 @@ export function parseTeamsChat(raw: string): ParsedMessage[] {
 /**
  * Extract unique participant names — only from lines immediately followed by a valid timestamp.
  */
+/**
+ * Extract unique participant names by parsing the chat and collecting all unique senders.
+ * This reuses the same parseTeamsChat logic so the name list matches what the AI sees.
+ */
 export function extractParticipants(raw: string): string[] {
-  const lines = raw.split("\n");
+  const messages = parseTeamsChat(raw);
   const names = new Set<string>();
-
-  const DATE_TS = /^\d{1,2}\/\d{1,2}(\s+\d{1,2}:\d{2}\s+(AM|PM))?$/i;
-  const DAY_TS = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+\d{1,2}:\d{2}\s+(AM|PM)$/i;
-  const NAME_RE = /^[\p{L}][\p{L}.\s]*$/u;
-
-  for (let i = 0; i < lines.length - 1; i++) {
-    const line = lines[i].trim();
-    const nextLine = lines[i + 1].trim();
-    const lowerLine = line.toLowerCase();
-
-    if (
-      line === "" ||
-      lowerLine.includes("begin reference") ||
-      lowerLine.includes("by ") ||
-      !NAME_RE.test(line)
-    ) {
-      continue;
-    }
-
-    if (DATE_TS.test(nextLine) || DAY_TS.test(nextLine)) {
-      names.add(line);
+  for (const msg of messages) {
+    if (msg.sender.trim()) {
+      names.add(msg.sender.trim());
     }
   }
-
   return [...names];
 }
 
