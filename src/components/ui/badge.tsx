@@ -15,6 +15,7 @@ const badgeVariants = cva(
         onTrack: "border-transparent bg-[hsl(var(--status-on-track))] text-primary-foreground",
         blocked: "border-transparent bg-[hsl(var(--status-blocked))] text-primary-foreground",
         inProgress: "border-transparent bg-[hsl(var(--status-in-progress))] text-primary-foreground",
+        quiet: "border-transparent bg-[hsl(var(--status-quiet))] text-primary-foreground",
       },
     },
     defaultVariants: {
