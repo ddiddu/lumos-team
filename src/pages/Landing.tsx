@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { User, Users } from "lucide-react";
+import { User, Users, MessageSquare, Hash } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
