@@ -235,7 +235,7 @@ const DataInput = () => {
                   className="rounded-xl border border-border bg-card px-6 py-3.5 text-sm font-medium transition-all duration-300 hover:border-primary hover:shadow-md hover:bg-primary/5"
                   initial="hidden"
                   animate="visible"
-                  custom={i * 0.5 + 1}
+                  custom={i * 0.08 + 0.5}
                   variants={fadeUp}
                 >
                   {name}

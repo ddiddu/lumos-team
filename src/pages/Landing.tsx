@@ -217,7 +217,7 @@ const Landing = () => {
 
       {/* Footer */}
       <footer className="border-t border-border py-8 text-center">
-        <p className="text-xs text-muted-foreground">© 2025 Lumos. Built for teams that move fast.</p>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Lumos. Built for teams that move fast.</p>
       </footer>
     </div>
   );
