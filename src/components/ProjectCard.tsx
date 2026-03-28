@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { ChevronRight, ArrowLeft } from "lucide-react";
+import { ChevronRight, ChevronUp } from "lucide-react";
 import type { Project, WeekLabelInfo } from "@/types/analysis";
 
 const statusVariant = (status: Project["status"]) => {
@@ -54,18 +54,7 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">{project.name}</h3>
-        <div className="flex items-center gap-2">
-          {expanded && (
-            <button
-              onClick={() => setExpanded(false)}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="h-3 w-3" />
-              Overview
-            </button>
-          )}
-          <Badge variant={statusVariant(project.status)}>{project.status}</Badge>
-        </div>
+        <Badge variant={statusVariant(project.status)}>{project.status}</Badge>
       </div>
 
       {/* Overview */}

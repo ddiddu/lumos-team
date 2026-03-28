@@ -138,45 +138,35 @@ export function extractParticipants(raw: string): string[] {
 }
 
 /**
- * Calculate real week labels from message timestamps.
- * Returns labels like "Mar W2", "Mar W3", etc.
+ * Calculate week labels based on TODAY's date (not chat messages).
+ * Always shows the 4 most recent Mon–Fri weeks relative to today.
+ * Format: "Mar 24 – 28" or "Mar 24 – Apr 4" if cross-month.
  */
-export function getWeekLabels(messages: ParsedMessage[]): WeekLabel[] {
-  if (messages.length === 0) {
-    return [
-      { key: "W1", label: "W1" },
-      { key: "W2", label: "W2" },
-      { key: "W3", label: "W3" },
-      { key: "W4", label: "W4" },
-    ];
-  }
-
-  const sorted = [...messages].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-  const latest = sorted[sorted.length - 1].timestamp;
-
-  const latestDay = latest.getDay();
-  const mondayOffset = latestDay === 0 ? 6 : latestDay - 1;
-  const w4Monday = new Date(latest);
-  w4Monday.setDate(latest.getDate() - mondayOffset);
-  w4Monday.setHours(0, 0, 0, 0);
+export function getWeekLabels(_messages?: ParsedMessage[]): WeekLabel[] {
+  const today = new Date();
+  const todayDay = today.getDay();
+  const mondayOffset = todayDay === 0 ? 6 : todayDay - 1;
+  const thisMonday = new Date(today);
+  thisMonday.setDate(today.getDate() - mondayOffset);
+  thisMonday.setHours(0, 0, 0, 0);
 
   const weekStarts = [
-    new Date(w4Monday.getTime() - 21 * 86400000),
-    new Date(w4Monday.getTime() - 14 * 86400000),
-    new Date(w4Monday.getTime() - 7 * 86400000),
-    w4Monday,
+    new Date(thisMonday.getTime() - 21 * 86400000),
+    new Date(thisMonday.getTime() - 14 * 86400000),
+    new Date(thisMonday.getTime() - 7 * 86400000),
+    thisMonday,
   ];
 
   const keys: ("W1" | "W2" | "W3" | "W4")[] = ["W1", "W2", "W3", "W4"];
 
   return weekStarts.map((start, i) => {
-    const month = MONTH_NAMES[start.getMonth()];
-    // Week of month (1-based)
-    const weekOfMonth = Math.ceil(start.getDate() / 7);
-    return {
-      key: keys[i],
-      label: `${month} W${weekOfMonth}`,
-    };
+    const friday = new Date(start.getTime() + 4 * 86400000);
+    const mStart = MONTH_NAMES[start.getMonth()];
+    const mEnd = MONTH_NAMES[friday.getMonth()];
+    const label = mStart === mEnd
+      ? `${mStart} ${start.getDate()} – ${friday.getDate()}`
+      : `${mStart} ${start.getDate()} – ${mEnd} ${friday.getDate()}`;
+    return { key: keys[i], label };
   });
 }
 
@@ -199,12 +189,12 @@ export function countMessages(messages: ParsedMessage[], userName: string): Pars
     (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
   );
 
-  const latest = sorted[sorted.length - 1].timestamp;
-
-  const latestDay = latest.getDay();
-  const mondayOffset = latestDay === 0 ? 6 : latestDay - 1;
-  const w4Monday = new Date(latest);
-  w4Monday.setDate(latest.getDate() - mondayOffset);
+  // Use TODAY's date for week slots, matching getWeekLabels
+  const today = new Date();
+  const todayDay = today.getDay();
+  const mondayOffset = todayDay === 0 ? 6 : todayDay - 1;
+  const w4Monday = new Date(today);
+  w4Monday.setDate(today.getDate() - mondayOffset);
   w4Monday.setHours(0, 0, 0, 0);
 
   const weekStarts = [

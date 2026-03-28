@@ -77,6 +77,10 @@ function computeStatusFromChat(
 
   const sorted = [...memberMsgs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   const lastMsg = sorted[0];
+  // No messages in last 4 weeks → quiet
+  const fourWeeksAgo = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000);
+  if (lastMsg.timestamp < fourWeeksAgo) return "quiet";
+  // No messages in last 3 days → quiet
   const threeDaysAgo = new Date(latestTimestamp.getTime() - 3 * 24 * 60 * 60 * 1000);
   if (lastMsg.timestamp < threeDaysAgo) return "quiet";
 
