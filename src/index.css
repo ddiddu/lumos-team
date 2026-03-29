@@ -56,9 +56,6 @@ All colors MUST be HSL.
     --status-active: 142 76% 36%;
     --status-blocked: 0 84% 44%;
     --status-quiet: 32 95% 44%;
-
-    --border: 0 0% 85%;
-    --muted-foreground: 0 0% 35%;
   }
 }
 
