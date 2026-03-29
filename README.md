@@ -1,6 +1,5 @@
-Lumos — Illuminate your team's path forward
-
----
+# Lumos
+## Illuminate your team's path forward
 
 According to Asana's research on knowledge workers, 60% of work time is spent on 'work about work' — a massive loss for every business. This includes chasing project status, coordinating, and figuring out what everyone's doing. These are exactly the things Lumos eliminates. The answers are already in your team's chat. Lumos reads it for you.
 
