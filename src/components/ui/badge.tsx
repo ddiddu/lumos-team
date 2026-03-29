@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
@@ -12,9 +12,9 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground",
         destructive: "border-transparent bg-destructive text-destructive-foreground",
         outline: "text-foreground",
-        active: "border-transparent bg-[hsl(var(--status-active)/0.12)] text-[hsl(var(--status-active))]",
-        blocked: "border-transparent bg-[hsl(var(--status-blocked)/0.12)] text-[hsl(var(--status-blocked))]",
-        quiet: "border-transparent bg-[hsl(var(--status-quiet)/0.12)] text-[hsl(var(--status-quiet))]",
+        active: "border-transparent bg-[hsl(var(--status-active)/0.15)] text-[hsl(var(--status-active))] font-semibold",
+        blocked: "border-transparent bg-[hsl(var(--status-blocked)/0.15)] text-[hsl(var(--status-blocked))] font-semibold",
+        quiet: "border-transparent bg-[hsl(var(--status-quiet)/0.15)] text-[hsl(var(--status-quiet))] font-semibold",
       },
     },
     defaultVariants: {

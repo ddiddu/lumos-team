@@ -35,28 +35,29 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
   const reversedWeeks = [...weeks].reverse();
 
   return (
-    <div data-tour="project-card" className="rounded-xl border border-border bg-card p-6 sm:p-8 space-y-5 transition-all duration-300 hover:shadow-sm">
+    <div data-tour="project-card" className="group rounded-xl border border-border bg-card p-5 sm:p-6 space-y-4 transition-shadow duration-200 hover:shadow-md hover:border-foreground/15">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">{project.name}</h3>
-        <Badge variant={statusVariant(project.status)} className="text-xs">{project.status}</Badge>
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1 min-w-0">
+          <h3 className="text-base font-semibold text-foreground leading-snug">{project.name}</h3>
+          {project.overview && <p className="text-[13px] text-muted-foreground leading-relaxed">{project.overview}</p>}
+        </div>
+        <Badge variant={statusVariant(project.status)} className="text-[10px] shrink-0 mt-0.5">{project.status}</Badge>
       </div>
 
-      {project.overview && <p className="text-sm text-muted-foreground leading-relaxed">{project.overview}</p>}
-
       {project.left_off && (
-        <div data-tour="left-off">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">Where I left off</p>
-          <p className="text-sm text-foreground">{project.left_off}</p>
+        <div data-tour="left-off" className="rounded-lg bg-muted/60 px-3.5 py-2.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Where I left off</p>
+          <p className="text-[13px] text-foreground leading-relaxed">{project.left_off}</p>
         </div>
       )}
 
       <div data-tour="next-up" className="space-y-2">
-        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Todo</p>
-        <ul className="space-y-1.5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Todo</p>
+        <ul className="space-y-1">
           {project.next_up.map((task, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-sm text-foreground">
-              <span className="text-muted-foreground mt-0.5">•</span>
+            <li key={i} className="flex items-start gap-2 text-[13px] text-foreground leading-relaxed">
+              <span className="text-muted-foreground/60 mt-px select-none">–</span>
               {task}
             </li>
           ))}
@@ -123,10 +124,10 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
 
           <button
             onClick={() => setExpanded(false)}
-            className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mx-auto"
+            className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mx-auto pt-1"
           >
             Collapse
-            <ChevronUp className="h-4 w-4" />
+            <ChevronUp className="h-3.5 w-3.5" />
           </button>
         </>
       )}
@@ -135,10 +136,10 @@ const ProjectCard = ({ project, weekLabels, forceExpanded }: ProjectCardProps) =
         <button
           data-tour="see-details"
           onClick={() => setExpanded(true)}
-          className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          className="flex items-center gap-1 text-[13px] font-medium text-foreground/70 hover:text-foreground transition-colors"
         >
           See details
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3.5 w-3.5" />
         </button>
       )}
     </div>
