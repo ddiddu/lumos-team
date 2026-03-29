@@ -175,7 +175,7 @@ const WalkthroughOverlay = ({ steps, storageKey, maskId }: WalkthroughOverlayPro
   return (
     <>
       <div className="fixed inset-0 z-50 pointer-events-none">
-        <svg className="absolute inset-0 w-full h-full">
+        <svg className="absolute inset-0 w-full h-full" style={{ pointerEvents: "none" }}>
           <defs>
             <mask id={maskId}>
               <rect width="100%" height="100%" fill="white" />

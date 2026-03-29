@@ -178,7 +178,7 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
             <div
               key={member.name}
               data-tour-manager="member-card"
-              className="rounded-xl border border-border bg-card p-5 flex flex-col justify-between space-y-4 transition-all duration-300 hover:shadow-md hover:border-border/80"
+              className="relative rounded-xl border border-border bg-card p-5 flex flex-col justify-between space-y-4 transition-shadow duration-300 hover:shadow-md hover:border-border/80"
             >
               <div className="flex items-start gap-3">
                 <div className={`h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 ${getAvatarClass(member.status)}`}>
@@ -208,8 +208,8 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
 
               <button
                 data-tour-manager="see-details"
-                onClick={() => setSelectedMember(member)}
-                className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors pt-1"
+                onClick={(e) => { e.stopPropagation(); setSelectedMember(member); }}
+                className="relative z-10 flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors pt-1 cursor-pointer"
               >
                 See details
                 <ChevronRight className="h-4 w-4" />
