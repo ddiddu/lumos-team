@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight, ArrowLeft } from "lucide-react";
 import type { AnalysisResult, WeekLabelInfo } from "@/types/analysis";
@@ -11,10 +11,28 @@ interface MemberCardData {
   name: string;
   role: string;
   status: MemberStatus;
-  analysisResult: AnalysisResult | null;
+  analysisResult: AnalysisResult;
 }
 
 const STATUS_PRIORITY: Record<string, number> = { blocked: 2, quiet: 1, active: 0 };
+
+function normalizeMemberName(name: string) {
+  return name.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function getFallbackAnalysisResult(role = "Team member", weekLabels?: WeekLabelInfo[]): AnalysisResult {
+  return {
+    work_style: {
+      role,
+      style: "",
+      likes: "",
+      dislikes: "",
+      speech_habits: "",
+    },
+    projects: [],
+    weekLabels,
+  };
+}
 
 function getStatusDotClass(status: MemberStatus) {
   switch (status) {
@@ -57,7 +75,8 @@ function computeStatusFromChat(
     }
     return worst;
   }
-  const memberMsgs = allMessages.filter((m) => m.sender.toLowerCase() === memberName.toLowerCase());
+  const normalizedMemberName = normalizeMemberName(memberName);
+  const memberMsgs = allMessages.filter((m) => normalizeMemberName(m.sender) === normalizedMemberName);
   if (memberMsgs.length === 0) return "quiet";
   const sorted = [...memberMsgs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   const lastMsg = sorted[0];
@@ -70,8 +89,8 @@ function computeStatusFromChat(
   for (const msg of recentMsgs) { if (blockedPatterns.test(msg.text)) return "blocked"; }
   if (lastMsg.text.includes("?")) {
     const allSorted = [...allMessages].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-    const lastMsgIdx = allSorted.findIndex((m) => m.timestamp.getTime() === lastMsg.timestamp.getTime() && m.sender === lastMsg.sender);
-    if (lastMsgIdx >= 0) { const afterMsgs = allSorted.slice(lastMsgIdx + 1); if (!afterMsgs.some((m) => m.sender.toLowerCase() !== memberName.toLowerCase())) return "blocked"; }
+    const lastMsgIdx = allSorted.findIndex((m) => m.timestamp.getTime() === lastMsg.timestamp.getTime() && normalizeMemberName(m.sender) === normalizedMemberName);
+    if (lastMsgIdx >= 0) { const afterMsgs = allSorted.slice(lastMsgIdx + 1); if (!afterMsgs.some((m) => normalizeMemberName(m.sender) !== normalizedMemberName)) return "blocked"; }
   }
   return "active";
 }
@@ -104,12 +123,24 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
   const dateRange = getDateRangeLabel(allMessages);
   const latestTimestamp = allMessages.length > 0 ? new Date(Math.max(...allMessages.map((m) => m.timestamp.getTime()))) : new Date();
   const participantNames = extractParticipants(chatData);
-  const otherMembers = participantNames.filter((n) => n.toLowerCase() !== userName.toLowerCase());
+  const otherMembers = participantNames.filter((n) => normalizeMemberName(n) !== normalizeMemberName(userName));
+  const normalizedResults = useMemo(
+    () => new Map(Object.entries(managerResults ?? {}).map(([name, value]) => [normalizeMemberName(name), value])),
+    [managerResults],
+  );
 
   const members: MemberCardData[] = otherMembers.map((memberName) => {
-    const analysisResult = managerResults?.[memberName] || null;
-    const status = computeStatusFromChat(memberName, allMessages, latestTimestamp, analysisResult);
-    return { name: memberName, role: analysisResult?.work_style?.role || "Team member", status, analysisResult };
+    const matchedResult = normalizedResults.get(normalizeMemberName(memberName)) ?? null;
+    const analysisResult = matchedResult ?? getFallbackAnalysisResult("Team member", weekLabels);
+    const status = computeStatusFromChat(memberName, allMessages, latestTimestamp, matchedResult);
+    return {
+      name: memberName,
+      role: matchedResult?.work_style?.role || "Team member",
+      status,
+      analysisResult: matchedResult
+        ? { ...matchedResult, weekLabels: matchedResult.weekLabels ?? weekLabels }
+        : analysisResult,
+    };
   }).sort((a, b) => (STATUS_PRIORITY[b.status] ?? 0) - (STATUS_PRIORITY[a.status] ?? 0));
 
   const statusCounts = {
@@ -131,11 +162,7 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
           <ArrowLeft className="h-4 w-4" />
           Back to team
         </button>
-        {selectedMember.analysisResult ? (
-          <MemberProfileView name={selectedMember.name} status={selectedMember.status} result={selectedMember.analysisResult} />
-        ) : (
-          <p className="text-sm text-muted-foreground">No project activity found for this member.</p>
-        )}
+        <MemberProfileView name={selectedMember.name} status={selectedMember.status} result={selectedMember.analysisResult} />
       </div>
     );
   }
@@ -173,7 +200,7 @@ const ManagerDashboard = ({ result, userName, weekLabels, chatData, managerResul
       {/* Member grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {displayMembers.map((member) => {
-          const projects = member.analysisResult?.projects || [];
+          const projects = member.analysisResult.projects || [];
           return (
             <div
               key={member.name}
