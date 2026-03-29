@@ -59,7 +59,7 @@ const MemberProfileView = ({ name, status, result }: MemberProfileViewProps) => 
 
       {/* Work style */}
       {result.work_style && (
-        <div data-tour="work-style" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div data-tour="work-style" className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {workStyleFields.map(({ label, key }) => (
             <div key={key} className="rounded-xl border border-border bg-card p-4">
               <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">{label}</p>

@@ -44,12 +44,15 @@ const ModeSelect = () => {
         <div className="flex flex-col sm:flex-row gap-5">
           <motion.button
             disabled
-            className="flex h-48 w-48 flex-col items-center justify-center gap-4 rounded-xl border border-border bg-card opacity-40 cursor-not-allowed"
+            className="relative flex h-48 w-48 flex-col items-center justify-center gap-4 rounded-xl border border-border bg-card opacity-40 cursor-not-allowed"
             initial="hidden"
             animate="visible"
             custom={1}
             variants={fadeUp}
           >
+            <span className="absolute top-3 right-3 text-[10px] font-medium uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              Soon
+            </span>
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
               <User className="h-6 w-6 text-muted-foreground" />
             </div>
