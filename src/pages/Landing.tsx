@@ -44,21 +44,17 @@ const Landing = () => {
           custom={1}
           variants={fadeUp}
         >
-          Stop chasing updates. The answers are already in your chat.
+          Stop chasing updates. The answers are already in your chat. Instantly know who's active, who's blocked, and
+          what needs your attention.
         </motion.p>
 
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          custom={2}
-          variants={fadeUp}
-        >
+        <motion.div initial="hidden" animate="visible" custom={2} variants={fadeUp}>
           <Button
             size="lg"
             className="mt-9 text-base px-8 h-12 rounded-full font-semibold shadow-md hover:shadow-lg transition-shadow duration-300 group"
             onClick={() => navigate("/start")}
           >
-            Illuminate Now
+            Lumos
             <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Button>
         </motion.div>
@@ -77,7 +73,8 @@ const Landing = () => {
           <span className="text-5xl sm:text-6xl font-bold text-primary shrink-0">60%</span>
           <div className="text-center sm:text-left">
             <p className="text-sm sm:text-base text-foreground/80 leading-relaxed">
-              of work time is spent on <em>'work about work'</em> — chasing status, coordinating, and figuring out what everyone's doing.
+              of work time is spent on <em>'work about work'</em> — chasing status, coordinating, and figuring out what
+              everyone's doing.
             </p>
             <p className="mt-2 text-xs text-muted-foreground">
               Asana · Anatomy of Work Index · 10,000 knowledge workers
@@ -217,7 +214,9 @@ const Landing = () => {
 
       {/* Footer */}
       <footer className="border-t border-border py-8 text-center">
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Lumos. Built for teams that move fast.</p>
+        <p className="text-xs text-muted-foreground">
+          © {new Date().getFullYear()} Lumos. Built for teams that move fast.
+        </p>
       </footer>
     </div>
   );
